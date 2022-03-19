@@ -26,6 +26,18 @@ class EventStreamVerifier<A>(
         receivedEvents.clear()
     }
 
+    fun verifyReceivedEventsUnordered(expected: Set<A>) {
+        val receivedEventsSet = receivedEvents.toSet()
+
+        assertEquals(
+            expected = expected,
+            actual = receivedEventsSet,
+            message = "Expected received events <$expected>, actual received events <$receivedEventsSet>."
+        )
+
+        receivedEvents.clear()
+    }
+
     fun verifyNoReceivedEvents() {
         assertTrue(
             actual = receivedEvents.isEmpty(),
@@ -114,6 +126,42 @@ class EventStreamTest {
 
         assertEquals(
             expected = source.referenceCount,
+            actual = 0,
+        )
+    }
+
+    @Test
+    fun testMergeWithNonInstantaneous() {
+        val source1 = EventEmitter<String>()
+
+        val source2 = EventEmitter<String>()
+
+        val verifier = EventStreamVerifier(
+            stream = source1.mergeWith(source2) { a, b -> "$a+$b" },
+        )
+
+        assertEquals(
+            expected = source1.referenceCount,
+            actual = 1,
+        )
+
+        assertEquals(
+            expected = source2.referenceCount,
+            actual = 1,
+        )
+
+        source1.emit("X")
+
+        verifier.verifyReceivedEvent("X")
+
+        source2.emit("Y")
+
+        verifier.verifyReceivedEvent("Y")
+
+        verifier.dispose()
+
+        assertEquals(
+            expected = source1.referenceCount,
             actual = 0,
         )
     }
