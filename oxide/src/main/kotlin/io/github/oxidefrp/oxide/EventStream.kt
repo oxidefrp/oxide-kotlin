@@ -1,52 +1,56 @@
 package io.github.oxidefrp.oxide
 
-import io.github.oxidefrp.oxide.event_stream.FilterEventStream
-import io.github.oxidefrp.oxide.event_stream.MapEventStream
-import io.github.oxidefrp.oxide.event_stream.MergeEventStream
-import io.github.oxidefrp.oxide.event_stream.NeverEventStream
-
-interface Subscription {
-    fun cancel()
-
-    operator fun plus(other: Subscription): Subscription {
-        val self = this
-
-        return object : Subscription {
-            override fun cancel() {
-                self.cancel()
-                other.cancel()
-            }
-        }
-    }
-}
+import io.github.oxidefrp.oxide.event_stream.EventStreamVertex
+import io.github.oxidefrp.oxide.event_stream.FilterEventStreamVertex
+import io.github.oxidefrp.oxide.event_stream.MapEventStreamVertex
+import io.github.oxidefrp.oxide.event_stream.MergeEventStreamVertex
+import io.github.oxidefrp.oxide.event_stream.NeverEventStreamVertex
+import io.github.oxidefrp.oxide.event_stream.Subscription
+import io.github.oxidefrp.oxide.event_stream.SubscriptionVertex
 
 abstract class EventStream<out A> {
+    internal abstract val vertex: EventStreamVertex<A>
+
     companion object {
-        fun <A> never(): EventStream<A> = NeverEventStream()
+        fun <A> never(): EventStream<A> =
+            object : EventStream<A>() {
+                override val vertex: EventStreamVertex<A> =
+                    NeverEventStreamVertex()
+            }
     }
 
     fun <B> map(transform: (A) -> B): EventStream<B> =
-        MapEventStream(
-            source = this,
-            transform = transform,
-        )
+        object : EventStream<B>() {
+            override val vertex: EventStreamVertex<B> = MapEventStreamVertex(
+                source = this@EventStream.vertex,
+                transform = transform,
+            )
+        }
 
     fun filter(predicate: (A) -> Boolean): EventStream<A> =
-        FilterEventStream(
-            source = this,
-            predicate = predicate,
+        object : EventStream<A>() {
+            override val vertex: EventStreamVertex<A> = FilterEventStreamVertex(
+                source = this@EventStream.vertex,
+                predicate = predicate,
+            )
+        }
+
+    fun subscribe(listener: (A) -> Unit): Subscription =
+        vertex.registerDependent(
+            SubscriptionVertex(
+                stream = this.vertex,
+                listener = listener,
+            ),
         )
-
-    abstract val referenceCount: Int
-
-    abstract fun subscribe(listener: (A) -> Unit): Subscription
 }
 
 fun <A> EventStream<A>.mergeWith(
     other: EventStream<A>,
     combine: (A, A) -> A,
-): EventStream<A> = MergeEventStream(
-    source1 = this,
-    source2 = other,
-    combine = combine,
-)
+): EventStream<A> = object : EventStream<A>() {
+    override val vertex: EventStreamVertex<A> = MergeEventStreamVertex(
+        source1 = this@mergeWith.vertex,
+        source2 = other.vertex,
+        combine = combine,
+    )
+}

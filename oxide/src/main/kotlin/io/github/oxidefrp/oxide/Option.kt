@@ -1,6 +1,19 @@
 package io.github.oxidefrp.oxide
 
 sealed class Option<out A> {
+    companion object {
+        fun <A, B, C> map2(
+            oa: Option<A>,
+            ob: Option<B>,
+            combine: (A, B) -> C,
+        ): Option<C> {
+            val sa = oa as? Some<A> ?: return None()
+            val sb = ob as? Some<B> ?: return None()
+
+            return Some(combine(sa.value, sb.value))
+        }
+    }
+
     abstract fun <B> fold(ifNone: () -> B, ifSome: (A) -> B): B
 
     fun isNone(): Boolean = fold(
@@ -11,6 +24,11 @@ sealed class Option<out A> {
     fun isSome(): Boolean = fold(
         ifNone = { false },
         ifSome = { true },
+    )
+
+    fun ifSome(listener: (A) -> Unit): Unit = fold(
+        ifNone = { },
+        ifSome = listener,
     )
 
     fun <B> map(transform: (A) -> B): Option<B> = fold(

@@ -1,15 +1,11 @@
 package io.github.oxidefrp.oxide
 
-import io.github.oxidefrp.oxide.event_stream.SimpleEventStream
+import io.github.oxidefrp.oxide.event_stream.EventEmitterVertex
 
-class EventEmitter<A> : SimpleEventStream<A>() {
-    override fun onFirstListenerAdded() {
-    }
-
-    override fun onLastListenerRemoved() {
-    }
+class EventEmitter<A> : EventStream<A>() {
+    override val vertex = EventEmitterVertex<A>()
 
     fun emit(event: A) {
-        notifyListeners(event)
+        vertex.emit(event)
     }
 }

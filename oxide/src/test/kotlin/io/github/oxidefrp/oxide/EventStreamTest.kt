@@ -15,12 +15,12 @@ class EventStreamVerifier<A>(
 
     fun verifyReceivedEvent(expected: A) {
         val singleStoredEvent = receivedEvents.singleOrNull()
-            ?: throw AssertionError("Expected a single received event <$expected>, actual received events <$receivedEvents>")
+            ?: throw AssertionError("Received more than one event")
 
         assertEquals(
             expected = expected,
             actual = singleStoredEvent,
-            message = "Expected a single received event <$expected>, actual received event <$singleStoredEvent>."
+            message = "Unexpected event received"
         )
 
         receivedEvents.clear()
@@ -32,7 +32,7 @@ class EventStreamVerifier<A>(
         assertEquals(
             expected = expected,
             actual = receivedEventsSet,
-            message = "Expected received events <$expected>, actual received events <$receivedEventsSet>."
+            message = "Unexpected events received",
         )
 
         receivedEvents.clear()
@@ -41,7 +41,7 @@ class EventStreamVerifier<A>(
     fun verifyNoReceivedEvents() {
         assertTrue(
             actual = receivedEvents.isEmpty(),
-            message = "Expected no received events, actual received events <$receivedEvents>."
+            message = "Expected no received events"
         )
 
         receivedEvents.clear()
@@ -69,7 +69,7 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source.referenceCount,
+            expected = source.vertex.referenceCount,
             actual = 1,
         )
 
@@ -88,7 +88,7 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source.referenceCount,
+            expected = source.vertex.referenceCount,
             actual = 0,
         )
     }
@@ -102,7 +102,7 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source.referenceCount,
+            expected = source.vertex.referenceCount,
             actual = 1,
         )
 
@@ -125,7 +125,7 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source.referenceCount,
+            expected = source.vertex.referenceCount,
             actual = 0,
         )
     }
@@ -141,12 +141,12 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source1.referenceCount,
+            expected = source1.vertex.referenceCount,
             actual = 1,
         )
 
         assertEquals(
-            expected = source2.referenceCount,
+            expected = source2.vertex.referenceCount,
             actual = 1,
         )
 
@@ -161,7 +161,7 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source1.referenceCount,
+            expected = source1.vertex.referenceCount,
             actual = 0,
         )
     }
@@ -179,23 +179,18 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source.referenceCount,
+            expected = source.vertex.referenceCount,
             actual = 2,
         )
 
         source.emit(2)
 
-        verifier.verifyReceivedEventsUnordered(
-            expected = setOf("2", "4"),
-        )
-
-        // TODO: Simultaneity
-//        verifier.verifyReceivedEvent("2+4")
+        verifier.verifyReceivedEvent("2+4")
 
         verifier.dispose()
 
         assertEquals(
-            expected = source.referenceCount,
+            expected = source.vertex.referenceCount,
             actual = 0,
         )
     }
