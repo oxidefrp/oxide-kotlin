@@ -26,6 +26,18 @@ class EventStreamVerifier<A>(
         receivedEvents.clear()
     }
 
+    fun verifyReceivedEventsUnordered(expected: Set<A>) {
+        val receivedEventsSet = receivedEvents.toSet()
+
+        assertEquals(
+            expected = expected,
+            actual = receivedEventsSet,
+            message = "Expected received events <$expected>, actual received events <$receivedEventsSet>."
+        )
+
+        receivedEvents.clear()
+    }
+
     fun verifyNoReceivedEvents() {
         assertTrue(
             actual = receivedEvents.isEmpty(),
@@ -109,6 +121,76 @@ class EventStreamTest {
         source.emit(4)
 
         verifier.verifyReceivedEvent(4)
+
+        verifier.dispose()
+
+        assertEquals(
+            expected = source.referenceCount,
+            actual = 0,
+        )
+    }
+
+    @Test
+    fun testMergeWithNonInstantaneous() {
+        val source1 = EventEmitter<String>()
+
+        val source2 = EventEmitter<String>()
+
+        val verifier = EventStreamVerifier(
+            stream = source1.mergeWith(source2) { a, b -> "$a+$b" },
+        )
+
+        assertEquals(
+            expected = source1.referenceCount,
+            actual = 1,
+        )
+
+        assertEquals(
+            expected = source2.referenceCount,
+            actual = 1,
+        )
+
+        source1.emit("X")
+
+        verifier.verifyReceivedEvent("X")
+
+        source2.emit("Y")
+
+        verifier.verifyReceivedEvent("Y")
+
+        verifier.dispose()
+
+        assertEquals(
+            expected = source1.referenceCount,
+            actual = 0,
+        )
+    }
+
+    @Test
+    fun testMergeWithInstantaneous() {
+        val source = EventEmitter<Int>()
+
+        val branch1 = source.map { "$it" }
+
+        val branch2 = source.map { "${it * 2}" }
+
+        val verifier = EventStreamVerifier(
+            stream = branch1.mergeWith(branch2) { a, b -> "$a+$b" },
+        )
+
+        assertEquals(
+            expected = source.referenceCount,
+            actual = 2,
+        )
+
+        source.emit(2)
+
+        verifier.verifyReceivedEventsUnordered(
+            expected = setOf("2", "4"),
+        )
+
+        // TODO: Simultaneity
+//        verifier.verifyReceivedEvent("2+4")
 
         verifier.dispose()
 
