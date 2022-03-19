@@ -42,6 +42,13 @@ class EventStreamVerifier<A>(
 
 class EventStreamTest {
     @Test
+    fun testNever() {
+        val stream = EventStream.never<Int>()
+
+        stream.subscribe { }.cancel()
+    }
+
+    @Test
     fun testMap() {
         val source = EventEmitter<Int>()
 

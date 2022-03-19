@@ -2,12 +2,17 @@ package io.github.oxidefrp.oxide
 
 import io.github.oxidefrp.oxide.event_stream.FilterEventStream
 import io.github.oxidefrp.oxide.event_stream.MapEventStream
+import io.github.oxidefrp.oxide.event_stream.NeverEventStream
 
 interface Subscription {
     fun cancel()
 }
 
 abstract class EventStream<out A> {
+    companion object {
+        fun <A> never(): EventStream<A> = NeverEventStream()
+    }
+
     fun <B> map(transform: (A) -> B): EventStream<B> =
         MapEventStream(
             source = this,
