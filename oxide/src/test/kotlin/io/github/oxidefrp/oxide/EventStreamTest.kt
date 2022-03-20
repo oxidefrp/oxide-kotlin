@@ -1,6 +1,5 @@
 package io.github.oxidefrp.oxide
 
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -238,8 +237,7 @@ class EventStreamTest {
     }
 
     @Test
-    @Ignore // TODO: Un-ignore
-    fun testSampleEach() {
+    fun testProbeEach() {
         val signalInput1 = SignalVerifier<Int>()
 
         val signalInput2 = SignalVerifier<Int>()
@@ -247,11 +245,11 @@ class EventStreamTest {
         val streamInput = EventEmitter<Signal<Int>>()
 
         val outputVerifier = EventStreamVerifier(
-            stream = EventStream.sampleEach(streamInput),
+            stream = EventStream.probeEach(streamInput),
         )
 
         assertEquals(
-            expected = 2,
+            expected = 1,
             actual = streamInput.vertex.referenceCount,
         )
 
@@ -270,8 +268,8 @@ class EventStreamTest {
 
         streamInput.emit(signalInput2.signal)
 
-        signalInput1.verifyValueWasSampled()
-        signalInput2.verifyValueWasNotSampled()
+        signalInput1.verifyValueWasNotSampled()
+        signalInput2.verifyValueWasSampled()
 
         outputVerifier.verifyReceivedEvent(expected = -3)
 
