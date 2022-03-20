@@ -3,7 +3,7 @@ package io.github.oxidefrp.oxide.event_stream
 import io.github.oxidefrp.oxide.Option
 import io.github.oxidefrp.oxide.Transaction
 
-internal abstract class ObservingEventStreamVertex<A> : SimpleEventStreamVertex<A>() {
+internal abstract class ObservingEventStreamVertex<A> : EventStreamVertex<A>() {
     private var upstreamSubscription: Subscription? = null
 
     private var cachedCurrentOccurrence: Option<A>? = null
@@ -12,7 +12,7 @@ internal abstract class ObservingEventStreamVertex<A> : SimpleEventStreamVertex<
         pullCurrentOccurrence(transaction = transaction)
     }
 
-    final override fun onFirstListenerAdded() {
+    final override fun onFirstDependencyAdded() {
         if (upstreamSubscription != null) {
             throw RuntimeException("Critical: there's already a remembered subscription")
         }
@@ -20,7 +20,7 @@ internal abstract class ObservingEventStreamVertex<A> : SimpleEventStreamVertex<
         upstreamSubscription = observe()
     }
 
-    final override fun onLastListenerRemoved() {
+    final override fun onLastDependencyRemoved() {
         val subscription = upstreamSubscription
             ?: throw RuntimeException("Critical: there's no remembered subscription")
 

@@ -30,4 +30,8 @@ abstract class Signal<out A> {
                     transform = transform,
                 )
         }
+
+    fun sampleExternally(): A = Transaction.wrap {
+        vertex.pullCurrentValue(transaction = it)
+    }
 }

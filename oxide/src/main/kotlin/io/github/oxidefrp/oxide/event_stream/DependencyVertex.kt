@@ -1,15 +1,15 @@
 package io.github.oxidefrp.oxide.event_stream
 
-internal abstract class SimpleEventStreamVertex<A> : EventStreamVertex<A>() {
+internal abstract class DependencyVertex : Vertex() {
     private val _dependents = mutableSetOf<Vertex>()
 
     override val dependents: Set<Vertex>
         get() = _dependents
 
-    final override val referenceCount: Int
+    val referenceCount: Int
         get() = dependents.size
 
-    final override fun registerDependent(dependent: Vertex): Subscription {
+    fun registerDependent(dependent: Vertex): Subscription {
         val wasAdded = _dependents.add(dependent)
 
         if (!wasAdded) {
@@ -17,7 +17,7 @@ internal abstract class SimpleEventStreamVertex<A> : EventStreamVertex<A>() {
         }
 
         if (_dependents.size == 1) {
-            onFirstListenerAdded()
+            onFirstDependencyAdded()
         }
 
         return object : Subscription {
@@ -29,13 +29,13 @@ internal abstract class SimpleEventStreamVertex<A> : EventStreamVertex<A>() {
                 }
 
                 if (_dependents.isEmpty()) {
-                    onLastListenerRemoved()
+                    onLastDependencyRemoved()
                 }
             }
         }
     }
 
-    abstract fun onFirstListenerAdded()
+    abstract fun onFirstDependencyAdded()
 
-    abstract fun onLastListenerRemoved()
+    abstract fun onLastDependencyRemoved()
 }

@@ -3,6 +3,18 @@ package io.github.oxidefrp.oxide
 import io.github.oxidefrp.oxide.event_stream.Vertex
 
 internal class Transaction {
+    companion object {
+        fun <A> wrap(block: (Transaction) -> A): A {
+            val transaction = Transaction()
+
+            val result = block(transaction)
+
+            transaction.finish()
+
+            return result
+        }
+    }
+
     private val resetQueue = mutableListOf<() -> Unit>()
 
     private val propagationQueue = mutableListOf<() -> Unit>()
@@ -15,7 +27,13 @@ internal class Transaction {
         propagationQueue.add(callback)
     }
 
+    // TODO: Nuke?
     fun run(root: Vertex) {
+        process(root)
+        finish()
+    }
+
+    fun process(root: Vertex) {
         val transitiveDependents = mutableSetOf<Vertex>()
 
         fun collectTransitiveDependents(vertex: Vertex) {
@@ -28,7 +46,9 @@ internal class Transaction {
         collectTransitiveDependents(root)
 
         transitiveDependents.forEach { it.process(transaction = this) }
+    }
 
+    private fun finish() {
         resetQueue.forEach { it() }
 
         propagationQueue.forEach { it() }

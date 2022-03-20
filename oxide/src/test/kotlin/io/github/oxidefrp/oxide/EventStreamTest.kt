@@ -15,7 +15,7 @@ class EventStreamVerifier<A>(
 
     fun verifyReceivedEvent(expected: A) {
         val singleStoredEvent = receivedEvents.singleOrNull()
-            ?: throw AssertionError("Received more than one event")
+            ?: throw AssertionError("Received more than one event or no events ($receivedEvents)")
 
         assertEquals(
             expected = expected,
