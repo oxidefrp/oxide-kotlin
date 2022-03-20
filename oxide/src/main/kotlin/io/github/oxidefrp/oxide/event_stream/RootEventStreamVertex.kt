@@ -1,13 +1,9 @@
 package io.github.oxidefrp.oxide.event_stream
 
-abstract class RootEventStreamVertex<A> : SimpleEventStreamVertex<A>() {
-    final override fun update() {
-    }
+import io.github.oxidefrp.oxide.Transaction
 
-    final override fun reset() {
-    }
-
-    final override fun execute() {
+internal abstract class RootEventStreamVertex<A> : SimpleEventStreamVertex<A>() {
+    override fun process(transaction: Transaction) {
     }
 
     final override fun onFirstListenerAdded() {

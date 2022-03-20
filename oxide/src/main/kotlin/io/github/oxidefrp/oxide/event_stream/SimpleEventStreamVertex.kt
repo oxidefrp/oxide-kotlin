@@ -1,6 +1,6 @@
 package io.github.oxidefrp.oxide.event_stream
 
-abstract class SimpleEventStreamVertex<A> : EventStreamVertex<A>() {
+internal abstract class SimpleEventStreamVertex<A> : EventStreamVertex<A>() {
     private val _dependents = mutableSetOf<Vertex>()
 
     override val dependents: Set<Vertex>

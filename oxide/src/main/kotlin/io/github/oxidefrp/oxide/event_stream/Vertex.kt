@@ -1,11 +1,9 @@
 package io.github.oxidefrp.oxide.event_stream
 
-abstract class Vertex {
+import io.github.oxidefrp.oxide.Transaction
+
+internal abstract class Vertex {
     internal abstract val dependents: Set<Vertex>
 
-    abstract fun update()
-
-    abstract fun reset()
-
-    abstract fun execute()
+    abstract fun process(transaction: Transaction)
 }

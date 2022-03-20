@@ -1,21 +1,15 @@
 package io.github.oxidefrp.oxide.event_stream
 
 import io.github.oxidefrp.oxide.Option
+import io.github.oxidefrp.oxide.Transaction
 
-abstract class ObservingEventStreamVertex<A> : SimpleEventStreamVertex<A>() {
+internal abstract class ObservingEventStreamVertex<A> : SimpleEventStreamVertex<A>() {
     private var upstreamSubscription: Subscription? = null
 
     private var cachedCurrentOccurrence: Option<A>? = null
 
-    final override fun update() {
-        currentOccurrence
-    }
-
-    final override fun reset() {
-        cachedCurrentOccurrence = null
-    }
-
-    final override fun execute() {
+    final override fun process(transaction: Transaction) {
+        pullCurrentOccurrence(transaction = transaction)
     }
 
     final override fun onFirstListenerAdded() {
@@ -35,14 +29,20 @@ abstract class ObservingEventStreamVertex<A> : SimpleEventStreamVertex<A>() {
         upstreamSubscription = null
     }
 
-    final override val currentOccurrence: Option<A>
-        get() = cachedCurrentOccurrence ?: run {
-            val occurrence = computeCurrentOccurrence()
-            cachedCurrentOccurrence = occurrence
-            occurrence
+    final override fun pullCurrentOccurrence(transaction: Transaction): Option<A> =
+        cachedCurrentOccurrence ?: run {
+            val currentOccurrence = pullCurrentOccurrenceUncached(transaction = transaction)
+
+            cachedCurrentOccurrence = currentOccurrence
+
+            transaction.enqueueForReset {
+                cachedCurrentOccurrence = null
+            }
+
+            currentOccurrence
         }
 
     abstract fun observe(): Subscription
 
-    abstract fun computeCurrentOccurrence(): Option<A>
+    abstract fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A>
 }

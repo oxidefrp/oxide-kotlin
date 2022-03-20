@@ -1,9 +1,10 @@
 package io.github.oxidefrp.oxide.event_stream
 
 import io.github.oxidefrp.oxide.Option
+import io.github.oxidefrp.oxide.Transaction
 import io.github.oxidefrp.oxide.orElse
 
-class MergeEventStreamVertex<A>(
+internal class MergeEventStreamVertex<A>(
     private val source1: EventStreamVertex<A>,
     private val source2: EventStreamVertex<A>,
     private val combine: (A, A) -> A,
@@ -14,13 +15,13 @@ class MergeEventStreamVertex<A>(
         return subscription1 + subscription2
     }
 
-    override fun computeCurrentOccurrence(): Option<A> =
+    override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A> =
         Option
             .map2(
-                source1.currentOccurrence,
-                source2.currentOccurrence,
+                source1.pullCurrentOccurrence(transaction = transaction),
+                source2.pullCurrentOccurrence(transaction = transaction),
                 combine,
             )
-            .orElse { source1.currentOccurrence }
-            .orElse { source2.currentOccurrence }
+            .orElse { source1.pullCurrentOccurrence(transaction = transaction) }
+            .orElse { source2.pullCurrentOccurrence(transaction = transaction) }
 }

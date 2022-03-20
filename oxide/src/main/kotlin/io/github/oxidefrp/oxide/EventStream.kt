@@ -5,6 +5,7 @@ import io.github.oxidefrp.oxide.event_stream.FilterEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.MapEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.MergeEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.NeverEventStreamVertex
+import io.github.oxidefrp.oxide.event_stream.ProbeEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.Subscription
 import io.github.oxidefrp.oxide.event_stream.SubscriptionVertex
 
@@ -17,6 +18,9 @@ abstract class EventStream<out A> {
                 override val vertex: EventStreamVertex<A> =
                     NeverEventStreamVertex()
             }
+
+        fun <A> sampleEach(stream: EventStream<Signal<A>>): EventStream<A> =
+            TODO()
     }
 
     fun <B> map(transform: (A) -> B): EventStream<B> =
@@ -34,6 +38,21 @@ abstract class EventStream<out A> {
                 predicate = predicate,
             )
         }
+
+    fun <B, C> probe(signal: Signal<B>, combine: (A, B) -> C): EventStream<C> =
+        object : EventStream<C>() {
+            override val vertex: EventStreamVertex<C> = ProbeEventStreamVertex(
+                stream = this@EventStream.vertex,
+                signal = signal.vertex,
+                combine = combine,
+            )
+        }
+
+    fun <B> probe(signal: Signal<B>): EventStream<B> =
+        probe(signal) { _, b -> b }
+
+    fun <B> sampleEachOf(selector: (A) -> Signal<B>): EventStream<B> =
+        sampleEach(map(selector))
 
     fun subscribe(listener: (A) -> Unit): Subscription =
         vertex.registerDependent(

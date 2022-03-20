@@ -40,7 +40,13 @@ sealed class Option<out A> {
         ifNone = { None() },
         ifSome = { if (predicate(it)) Some(it) else None() },
     )
+
 }
+
+fun <A> Option<A>.getOrElse(defaultValue: () -> A): A = fold(
+    ifNone = defaultValue,
+    ifSome = { it },
+)
 
 fun <A> Option<A>.orElse(defaultValue: () -> Option<A>): Option<A> = fold(
     ifNone = { defaultValue() },

@@ -1,5 +1,6 @@
 package io.github.oxidefrp.oxide
 
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -69,8 +70,8 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source.vertex.referenceCount,
-            actual = 1,
+            expected = 1,
+            actual = source.vertex.referenceCount,
         )
 
         source.emit(1)
@@ -88,8 +89,8 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source.vertex.referenceCount,
-            actual = 0,
+            expected = 0,
+            actual = source.vertex.referenceCount,
         )
     }
 
@@ -102,8 +103,8 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source.vertex.referenceCount,
-            actual = 1,
+            expected = 1,
+            actual = source.vertex.referenceCount,
         )
 
         source.emit(1)
@@ -125,8 +126,8 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source.vertex.referenceCount,
-            actual = 0,
+            expected = 0,
+            actual = source.vertex.referenceCount,
         )
     }
 
@@ -141,13 +142,13 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source1.vertex.referenceCount,
-            actual = 1,
+            expected = 1,
+            actual = source1.vertex.referenceCount,
         )
 
         assertEquals(
-            expected = source2.vertex.referenceCount,
-            actual = 1,
+            expected = 1,
+            actual = source2.vertex.referenceCount,
         )
 
         source1.emit("X")
@@ -161,8 +162,8 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source1.vertex.referenceCount,
-            actual = 0,
+            expected = 0,
+            actual = source1.vertex.referenceCount,
         )
     }
 
@@ -179,8 +180,8 @@ class EventStreamTest {
         )
 
         assertEquals(
-            expected = source.vertex.referenceCount,
-            actual = 2,
+            expected = 2,
+            actual = source.vertex.referenceCount,
         )
 
         source.emit(2)
@@ -190,8 +191,95 @@ class EventStreamTest {
         verifier.dispose()
 
         assertEquals(
-            expected = source.vertex.referenceCount,
-            actual = 0,
+            expected = 0,
+            actual = source.vertex.referenceCount,
+        )
+    }
+
+    @Test
+    fun testProbe() {
+        val streamInput = EventEmitter<Char>()
+
+        val signalInput = SignalVerifier<Int>()
+
+        val outputVerifier = EventStreamVerifier(
+            stream = streamInput.probe(
+                signalInput.signal,
+            ) { i, c -> "$i-$c" },
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = streamInput.vertex.referenceCount,
+        )
+
+        signalInput.prepareValue(2)
+
+        streamInput.emit('a')
+
+        signalInput.verifyValueWasSampled()
+
+        outputVerifier.verifyReceivedEvent(expected = "a-2")
+
+        signalInput.prepareValue(4)
+
+        streamInput.emit('b')
+
+        signalInput.verifyValueWasSampled()
+
+        outputVerifier.verifyReceivedEvent(expected = "b-4")
+
+        outputVerifier.dispose()
+
+        assertEquals(
+            expected = 0,
+            actual = streamInput.vertex.referenceCount,
+        )
+    }
+
+    @Test
+    @Ignore // TODO: Un-ignore
+    fun testSampleEach() {
+        val signalInput1 = SignalVerifier<Int>()
+
+        val signalInput2 = SignalVerifier<Int>()
+
+        val streamInput = EventEmitter<Signal<Int>>()
+
+        val outputVerifier = EventStreamVerifier(
+            stream = EventStream.sampleEach(streamInput),
+        )
+
+        assertEquals(
+            expected = 2,
+            actual = streamInput.vertex.referenceCount,
+        )
+
+        signalInput1.prepareValue(2)
+        signalInput2.prepareValue(-2)
+
+        streamInput.emit(signalInput1.signal)
+
+        signalInput1.verifyValueWasSampled()
+        signalInput2.verifyValueWasNotSampled()
+
+        outputVerifier.verifyReceivedEvent(expected = 2)
+
+        signalInput1.prepareValue(3)
+        signalInput2.prepareValue(-3)
+
+        streamInput.emit(signalInput2.signal)
+
+        signalInput1.verifyValueWasSampled()
+        signalInput2.verifyValueWasNotSampled()
+
+        outputVerifier.verifyReceivedEvent(expected = -3)
+
+        outputVerifier.dispose()
+
+        assertEquals(
+            expected = 0,
+            actual = streamInput.vertex.referenceCount,
         )
     }
 }
