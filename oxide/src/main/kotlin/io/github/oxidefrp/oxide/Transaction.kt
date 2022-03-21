@@ -27,17 +27,11 @@ internal class Transaction {
         propagationQueue.add(callback)
     }
 
-    // TODO: Nuke?
-    fun run(root: Vertex) {
-        process(root)
-        finish()
-    }
-
     fun process(root: Vertex) {
         val transitiveDependents = mutableSetOf<Vertex>()
 
         fun collectTransitiveDependents(vertex: Vertex) {
-            vertex.dependents.forEach {
+            vertex.getDependents().forEach {
                 transitiveDependents.add(it)
                 collectTransitiveDependents(it)
             }

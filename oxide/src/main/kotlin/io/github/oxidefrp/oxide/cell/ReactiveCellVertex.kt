@@ -1,23 +1,15 @@
 package io.github.oxidefrp.oxide.cell
 
-import io.github.oxidefrp.oxide.None
 import io.github.oxidefrp.oxide.Option
-import io.github.oxidefrp.oxide.Some
 import io.github.oxidefrp.oxide.Transaction
 import io.github.oxidefrp.oxide.event_stream.CellVertex
-import io.github.oxidefrp.oxide.getOrElse
 
-internal abstract class CachingCellVertex<A> : CellVertex<A>() {
-    private var cachedOldValue: Option<A> = None()
-
+internal abstract class ReactiveCellVertex<A> : CellVertex<A>() {
     private var cachedNewValue: Option<A>? = null
 
     final override fun process(transaction: Transaction) {
         pullNewValue(transaction = transaction)
     }
-
-    final override val oldValue: A
-        get() = cachedOldValue.getOrElse { sampleOldValue() }
 
     final override fun pullNewValue(transaction: Transaction): Option<A> =
         cachedNewValue ?: run {
@@ -27,7 +19,7 @@ internal abstract class CachingCellVertex<A> : CellVertex<A>() {
 
             transaction.enqueueForReset {
                 newValue.ifSome {
-                    cachedOldValue = Some(it)
+                    storeNewValue(newValue = it)
                 }
 
                 cachedNewValue = null
@@ -36,7 +28,7 @@ internal abstract class CachingCellVertex<A> : CellVertex<A>() {
             newValue
         }
 
-    abstract fun sampleOldValue(): A
+    abstract fun storeNewValue(newValue: A)
 
-    abstract fun pullNewValueUncached(transaction: Transaction): Option<A>
+    protected abstract fun pullNewValueUncached(transaction: Transaction): Option<A>
 }

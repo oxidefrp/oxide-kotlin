@@ -11,7 +11,7 @@ class CellInput<A>(
     val cell = valueEmitter.hold(initialValue)
 
     fun setValue(newValue: A) {
-        valueEmitter.emit(newValue)
+        valueEmitter.emitExternally(newValue)
     }
 }
 

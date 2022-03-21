@@ -2,10 +2,10 @@ package io.github.oxidefrp.oxide.cell
 
 import io.github.oxidefrp.oxide.event_stream.Subscription
 
-internal abstract class ObservingCellVertex<A> : CachingCellVertex<A>() {
+internal abstract class ObservingCellVertex<A> : TransformingCellVertex<A>() {
     private var upstreamSubscription: Subscription? = null
 
-    final override fun onFirstDependencyAdded() {
+    override fun onTransformationResumed() {
         if (upstreamSubscription != null) {
             throw RuntimeException("Critical: there's already a remembered subscription")
         }
@@ -13,7 +13,7 @@ internal abstract class ObservingCellVertex<A> : CachingCellVertex<A>() {
         upstreamSubscription = observe()
     }
 
-    final override fun onLastDependencyRemoved() {
+    override fun onTransformationPaused() {
         val subscription = upstreamSubscription
             ?: throw RuntimeException("Critical: there's no remembered subscription")
 

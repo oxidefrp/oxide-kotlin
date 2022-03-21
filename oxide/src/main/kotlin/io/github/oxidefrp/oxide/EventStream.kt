@@ -1,5 +1,6 @@
 package io.github.oxidefrp.oxide
 
+import io.github.oxidefrp.oxide.cell.HoldCellVertex
 import io.github.oxidefrp.oxide.event_stream.CellVertex
 import io.github.oxidefrp.oxide.event_stream.EventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.FilterEventStreamVertex
@@ -82,5 +83,8 @@ fun <A> EventStream<A>.mergeWith(
 
 fun <A> EventStream<A>.hold(initialValue: A): Cell<A> =
     object : Cell<A>() {
-        override val vertex: CellVertex<A> = TODO()
+        override val vertex: CellVertex<A> = HoldCellVertex(
+            steps = this@hold.vertex,
+            initialValue = initialValue,
+        )
     }

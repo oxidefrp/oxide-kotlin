@@ -52,11 +52,11 @@ class SignalTest {
             stream = streamInput.probe(signal),
         )
 
-        streamInput.emit(Unit)
+        streamInput.emitExternally(Unit)
 
         verifier.verifyReceivedEvent(expected = 8)
 
-        streamInput.emit(Unit)
+        streamInput.emitExternally(Unit)
 
         verifier.verifyReceivedEvent(expected = 8)
     }
@@ -78,7 +78,7 @@ class SignalTest {
             stream = streamInput.probe(sourceSignal),
         )
 
-        streamInput.emit(Unit)
+        streamInput.emitExternally(Unit)
 
         assertEquals(
             expected = 1,
@@ -91,7 +91,7 @@ class SignalTest {
 
         preparedValue = "B"
 
-        streamInput.emit(Unit)
+        streamInput.emitExternally(Unit)
 
         assertEquals(
             expected = 1,
@@ -117,7 +117,7 @@ class SignalTest {
 
         signalVerifier1.prepareValue(2)
 
-        streamInput.emit(Unit)
+        streamInput.emitExternally(Unit)
 
         signalVerifier1.verifyValueWasSampled()
 
@@ -125,7 +125,7 @@ class SignalTest {
 
         signalVerifier1.prepareValue(4)
 
-        streamInput.emit(Unit)
+        streamInput.emitExternally(Unit)
 
         signalVerifier1.verifyValueWasSampled()
 

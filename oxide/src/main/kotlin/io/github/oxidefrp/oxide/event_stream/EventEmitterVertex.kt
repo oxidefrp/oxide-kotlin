@@ -12,14 +12,16 @@ internal class EventEmitterVertex<A> : RootEventStreamVertex<A>() {
         emittedOccurrence
 
     fun emit(event: A) {
-        if (emittedOccurrence.isSome()) {
-            throw IllegalStateException("Emitter is already emitting an event")
+        Transaction.wrap { transaction ->
+            if (emittedOccurrence.isSome()) {
+                throw IllegalStateException("Emitter is already emitting an event")
+            }
+
+            emittedOccurrence = Some(event)
+
+            transaction.process(this)
+
+            emittedOccurrence = None()
         }
-
-        emittedOccurrence = Some(event)
-
-        Transaction().run(this)
-
-        emittedOccurrence = None()
     }
 }

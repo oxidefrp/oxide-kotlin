@@ -1,5 +1,7 @@
 package io.github.oxidefrp.oxide
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -73,15 +75,15 @@ class EventStreamTest {
             actual = source.vertex.referenceCount,
         )
 
-        source.emit(1)
+        source.emitExternally(1)
 
         verifier.verifyReceivedEvent(expected = "2")
 
-        source.emit(2)
+        source.emitExternally(2)
 
         verifier.verifyReceivedEvent(expected = "4")
 
-        source.emit(3)
+        source.emitExternally(3)
 
         verifier.verifyReceivedEvent(expected = "6")
 
@@ -106,19 +108,19 @@ class EventStreamTest {
             actual = source.vertex.referenceCount,
         )
 
-        source.emit(1)
+        source.emitExternally(1)
 
         verifier.verifyNoReceivedEvents()
 
-        source.emit(2)
+        source.emitExternally(2)
 
         verifier.verifyReceivedEvent(2)
 
-        source.emit(3)
+        source.emitExternally(3)
 
         verifier.verifyNoReceivedEvents()
 
-        source.emit(4)
+        source.emitExternally(4)
 
         verifier.verifyReceivedEvent(4)
 
@@ -150,11 +152,11 @@ class EventStreamTest {
             actual = source2.vertex.referenceCount,
         )
 
-        source1.emit("X")
+        source1.emitExternally("X")
 
         verifier.verifyReceivedEvent("X")
 
-        source2.emit("Y")
+        source2.emitExternally("Y")
 
         verifier.verifyReceivedEvent("Y")
 
@@ -183,7 +185,7 @@ class EventStreamTest {
             actual = source.vertex.referenceCount,
         )
 
-        source.emit(2)
+        source.emitExternally(2)
 
         verifier.verifyReceivedEvent("2+4")
 
@@ -214,7 +216,7 @@ class EventStreamTest {
 
         signalInput.prepareValue(2)
 
-        streamInput.emit('a')
+        streamInput.emitExternally('a')
 
         signalInput.verifyValueWasSampled()
 
@@ -222,7 +224,7 @@ class EventStreamTest {
 
         signalInput.prepareValue(4)
 
-        streamInput.emit('b')
+        streamInput.emitExternally('b')
 
         signalInput.verifyValueWasSampled()
 
@@ -256,7 +258,7 @@ class EventStreamTest {
         signalInput1.prepareValue(2)
         signalInput2.prepareValue(-2)
 
-        streamInput.emit(signalInput1.signal)
+        streamInput.emitExternally(signalInput1.signal)
 
         signalInput1.verifyValueWasSampled()
         signalInput2.verifyValueWasNotSampled()
@@ -266,7 +268,7 @@ class EventStreamTest {
         signalInput1.prepareValue(3)
         signalInput2.prepareValue(-3)
 
-        streamInput.emit(signalInput2.signal)
+        streamInput.emitExternally(signalInput2.signal)
 
         signalInput1.verifyValueWasNotSampled()
         signalInput2.verifyValueWasSampled()
@@ -278,6 +280,80 @@ class EventStreamTest {
         assertEquals(
             expected = 0,
             actual = streamInput.vertex.referenceCount,
+        )
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testHold() = runTest {
+        val steps = EventEmitter<Int>()
+
+        assertEquals(
+            expected = 0,
+            actual = steps.vertex.referenceCount,
+        )
+
+        val result: Cell<Int> = steps.hold(1)
+
+        assertEquals(
+            expected = 1,
+            actual = steps.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = result.value.sampleExternally(),
+        )
+
+        val outputVerifier = EventStreamVerifier(
+            stream = result.changes,
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = steps.vertex.referenceCount,
+        )
+
+        outputVerifier.verifyNoReceivedEvents()
+
+        steps.emitExternally(2)
+
+        assertEquals(
+            expected = 2,
+            actual = result.value.sampleExternally(),
+        )
+
+        outputVerifier.verifyReceivedEvent(
+            expected = ValueChange(
+                oldValue = 1,
+                newValue = 2,
+            ),
+        )
+
+        steps.emitExternally(3)
+
+        assertEquals(
+            expected = 3,
+            actual = result.value.sampleExternally(),
+        )
+
+        outputVerifier.verifyReceivedEvent(
+            expected = ValueChange(
+                oldValue = 2,
+                newValue = 3,
+            ),
+        )
+
+        outputVerifier.dispose()
+
+        assertEquals(
+            expected = 3,
+            actual = result.value.sampleExternally(),
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = steps.vertex.referenceCount,
         )
     }
 }

@@ -6,7 +6,7 @@ internal class SubscriptionVertex<A>(
     private val stream: EventStreamVertex<A>,
     private val listener: (A) -> Unit,
 ) : Vertex() {
-    override val dependents: Set<Vertex> = emptySet()
+    override fun getDependents(): Iterable<Vertex> = emptyList()
 
     override fun process(transaction: Transaction) {
         val occurrence = stream.pullCurrentOccurrence(transaction = transaction)
