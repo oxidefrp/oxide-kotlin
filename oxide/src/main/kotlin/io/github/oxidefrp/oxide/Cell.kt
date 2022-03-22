@@ -3,6 +3,7 @@ package io.github.oxidefrp.oxide
 import io.github.oxidefrp.oxide.cell.ConstantCellVertex
 import io.github.oxidefrp.oxide.event_stream.CellVertex
 import io.github.oxidefrp.oxide.cell.MapCellVertex
+import io.github.oxidefrp.oxide.cell.SwitchCellVertex
 import io.github.oxidefrp.oxide.event_stream.EventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.ObservingEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.Subscription
@@ -42,6 +43,14 @@ abstract class Cell<out A> {
             object : Cell<A>() {
                 override val vertex: CellVertex<A> =
                     ConstantCellVertex(value = value)
+            }
+
+        fun <A> switch(cell: Cell<Cell<A>>): Cell<A> =
+            object : Cell<A>() {
+                override val vertex: CellVertex<A> =
+                    SwitchCellVertex(
+                        source = cell.vertex,
+                    )
             }
     }
 
