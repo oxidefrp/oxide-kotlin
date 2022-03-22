@@ -12,6 +12,11 @@ sealed class Option<out A> {
 
             return Some(combine(sa.value, sb.value))
         }
+
+        fun <A> test(
+            guard: Boolean,
+            provide: () -> A,
+        ): Option<A> = if (guard) Some(provide()) else None()
     }
 
     abstract fun <B> fold(ifNone: () -> B, ifSome: (A) -> B): B

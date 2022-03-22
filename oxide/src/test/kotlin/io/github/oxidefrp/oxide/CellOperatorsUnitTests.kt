@@ -261,4 +261,193 @@ class CellOperatorsUnitTests {
             actual = result.value.sampleExternally(),
         )
     }
+
+    @Test
+    fun testApplySampleUnreferenced() {
+        val functionCell = MutableCell(
+            initialValue = fun(i: Int): String = "#$i",
+        )
+
+        val argumentCell = MutableCell(
+            initialValue = 1,
+        )
+
+        val result = Cell.apply(
+            function = functionCell,
+            argument = argumentCell,
+        )
+
+        assertEquals(
+            expected = "#1",
+            actual = result.value.sampleExternally(),
+        )
+    }
+
+    @Test
+    fun testApplySampleReferenced() {
+        val functionCell = MutableCell(
+            initialValue = fun(i: Int): String = "#$i",
+        )
+
+        val argumentCell = MutableCell(
+            initialValue = 1,
+        )
+
+        val result = Cell.apply(
+            function = functionCell,
+            argument = argumentCell,
+        )
+
+        result.changes.subscribe { }
+
+        assertEquals(
+            expected = "#1",
+            actual = result.value.sampleExternally(),
+        )
+    }
+
+    @Test
+    fun testApplyObservation() {
+        val functionCell = MutableCell(
+            initialValue = fun(i: Int): String = "#$i",
+        )
+
+        val argumentCell = MutableCell(
+            initialValue = 1,
+        )
+
+        val result = Cell.apply(
+            function = functionCell,
+            argument = argumentCell,
+        )
+
+        val subscription = result.changes.subscribe { }
+
+        assertEquals(
+            expected = 1,
+            actual = functionCell.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = functionCell.vertex.referenceCount,
+        )
+
+        subscription.cancel()
+
+        assertEquals(
+            expected = 0,
+            actual = functionCell.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 0,
+            actual = functionCell.vertex.referenceCount,
+        )
+    }
+
+    @Test
+    fun testApplyFunctionChange() {
+        val functionCell = MutableCell(
+            initialValue = fun(i: Int): String = "#$i",
+        )
+
+        val argumentCell = MutableCell(
+            initialValue = 1,
+        )
+
+        val result = Cell.apply(
+            function = functionCell,
+            argument = argumentCell,
+        )
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result.changes,
+        )
+
+        functionCell.setValueExternally(
+            fun(i: Int): String = "@$i"
+        )
+
+        changesVerifier.verifyReceivedEvent(
+            expected = ValueChange(
+                oldValue = "#1",
+                newValue = "@1"
+            )
+        )
+    }
+
+    @Test
+    fun testApplyArgumentChange() {
+        val functionCell = MutableCell(
+            initialValue = fun(i: Int): String = "#$i",
+        )
+
+        val argumentCell = MutableCell(
+            initialValue = 1,
+        )
+
+        val result = Cell.apply(
+            function = functionCell,
+            argument = argumentCell,
+        )
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result.changes,
+        )
+
+        argumentCell.setValueExternally(2)
+
+        changesVerifier.verifyReceivedEvent(
+            expected = ValueChange(
+                oldValue = "#1",
+                newValue = "#2"
+            )
+        )
+    }
+
+    @Test
+    fun testApplyFunctionArgumentChangeInstantaneous() {
+        val eventEmitter = EventEmitter<Int>()
+
+        val functionCell = eventEmitter
+            .map {
+                if (it % 2 == 0) fun(i: Int): String = "even:$i"
+                else fun(i: Int): String = "odd:$i"
+            }
+            .hold(initialValue = fun(i: Int): String = ":$i")
+            .sampleExternally()
+
+        val argumentCell = eventEmitter
+            .map { -it }
+            .hold(initialValue = 0)
+            .sampleExternally()
+
+        val result = Cell.apply(
+            function = functionCell,
+            argument = argumentCell,
+        )
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result.changes,
+        )
+
+        eventEmitter.emitExternally(1)
+
+        changesVerifier.verifyReceivedEvent(
+            expected = ValueChange(
+                oldValue = ":0",
+                newValue = "odd:-1",
+            ),
+        )
+
+        eventEmitter.emitExternally(2)
+
+        changesVerifier.verifyReceivedEvent(
+            expected = ValueChange(
+                oldValue = "odd:-1",
+                newValue = "even:-2",
+            ),
+        )
+    }
 }

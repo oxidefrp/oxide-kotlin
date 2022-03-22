@@ -1,5 +1,6 @@
 package io.github.oxidefrp.oxide
 
+import io.github.oxidefrp.oxide.cell.ApplyCellVertex
 import io.github.oxidefrp.oxide.cell.ConstantCellVertex
 import io.github.oxidefrp.oxide.event_stream.CellVertex
 import io.github.oxidefrp.oxide.cell.MapCellVertex
@@ -61,6 +62,57 @@ abstract class Cell<out A> {
                         source = cell.vertex,
                     )
             }
+
+        fun <A, B> apply(
+            function: Cell<(A) -> B>,
+            argument: Cell<A>,
+        ): Cell<B> =
+            object : Cell<B>() {
+                override val vertex: CellVertex<B> =
+                    ApplyCellVertex(
+                        function = function.vertex,
+                        argument = argument.vertex,
+                    )
+            }
+
+        fun <A, B> map1(
+            ca: Cell<A>,
+            f: (a: A) -> B,
+        ): Cell<B> {
+            fun g(a: A) = f(a)
+
+            return ca.map(::g)
+        }
+
+        fun <A, B, C> map2(
+            ca: Cell<A>,
+            cb: Cell<B>,
+            f: (a: A, b: B) -> C,
+        ): Cell<C> {
+            fun g(a: A) = fun(b: B) = f(a, b)
+
+            return apply(
+                ca.map(::g),
+                cb,
+            )
+        }
+
+        fun <A, B, C, D> map3(
+            ca: Cell<A>,
+            cb: Cell<B>,
+            cc: Cell<C>,
+            f: (a: A, b: B, c: C) -> D,
+        ): Cell<D> {
+            fun g(a: A) = fun(b: B) = fun(c: C) = f(a, b, c)
+
+            return apply(
+                apply(
+                    ca.map(::g),
+                    cb,
+                ),
+                cc,
+            )
+        }
     }
 
     internal abstract val vertex: CellVertex<A>
