@@ -131,4 +131,38 @@ class SignalOperatorsUnitTests {
 
         verifier.verifyReceivedEvent(expected = "12")
     }
+
+    @Test
+    fun testApply() {
+        val functionSignal = SignalVerifier<(Int) -> String>()
+
+        val argumentSignal = SignalVerifier<Int>()
+
+        val result = Signal.apply(
+            function = functionSignal.signal,
+            argument = argumentSignal.signal,
+        )
+
+        functionSignal.prepareValue(
+            fun(i: Int): String = "#$i"
+        )
+
+        argumentSignal.prepareValue(1)
+
+        assertEquals(
+            expected = "#1",
+            actual = result.sampleExternally(),
+        )
+
+        functionSignal.prepareValue(
+            fun(i: Int): String = "@$i"
+        )
+
+        argumentSignal.prepareValue(2)
+
+        assertEquals(
+            expected = "@2",
+            actual = result.sampleExternally(),
+        )
+    }
 }
