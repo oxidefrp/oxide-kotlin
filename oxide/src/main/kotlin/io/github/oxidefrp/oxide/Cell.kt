@@ -80,4 +80,7 @@ abstract class Cell<out A> {
                     transform = transform,
                 )
         }
+
+    fun <B> switchOf(transform: (A) -> Cell<B>): Cell<B> =
+        switch(map(transform))
 }

@@ -54,7 +54,7 @@ class EventStreamVerifier<A>(
     }
 }
 
-class EventStreamTest {
+class EventStreamOperatorsUnitTests {
     @Test
     fun testNever() {
         val stream = EventStream.never<Int>()

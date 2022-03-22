@@ -3,19 +3,7 @@ package io.github.oxidefrp.oxide
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class CellInput<A>(
-    initialValue: A,
-) {
-    private val valueEmitter = EventEmitter<A>()
-
-    val cell = valueEmitter.hold(initialValue)
-
-    fun setValue(newValue: A) {
-        valueEmitter.emitExternally(newValue)
-    }
-}
-
-class CellTest {
+class CellOperatorsUnitTests {
     @Test
     fun testConstant() {
         val cell = Cell.constant(9)

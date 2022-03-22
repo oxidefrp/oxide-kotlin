@@ -41,7 +41,7 @@ class SignalVerifier<A> {
     }
 }
 
-class SignalTest {
+class SignalOperatorsUnitTests {
     @Test
     fun testConstant() {
         val streamInput = EventEmitter<Unit>()
