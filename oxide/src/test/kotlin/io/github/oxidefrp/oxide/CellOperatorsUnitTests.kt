@@ -163,8 +163,11 @@ class CellOperatorsUnitTests {
 
     @Test
     fun testSwitchChangeOuter() {
+        val oldCell = Cell.constant(1)
+        val newCell = Cell.constant(2)
+
         val source = MutableCell(
-            initialValue = Cell.constant(1),
+            initialValue = oldCell,
         )
 
         val result = Cell.switch(source)
@@ -173,8 +176,26 @@ class CellOperatorsUnitTests {
             stream = result.changes,
         )
 
-        source.setValueExternally(
-            Cell.constant(2),
+        assertEquals(
+            expected = 1,
+            actual = oldCell.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 0,
+            actual = newCell.vertex.referenceCount,
+        )
+
+        source.setValueExternally(newCell)
+
+        assertEquals(
+            expected = 0,
+            actual = oldCell.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = newCell.vertex.referenceCount,
         )
 
         assertEquals(
@@ -187,6 +208,18 @@ class CellOperatorsUnitTests {
                 oldValue = 1,
                 newValue = 2,
             ),
+        )
+
+        changesVerifier.dispose()
+
+        assertEquals(
+            expected = 0,
+            actual = oldCell.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 0,
+            actual = newCell.vertex.referenceCount,
         )
     }
 

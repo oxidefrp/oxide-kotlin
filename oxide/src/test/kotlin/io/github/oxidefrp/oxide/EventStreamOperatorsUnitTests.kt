@@ -356,4 +356,127 @@ class EventStreamOperatorsUnitTests {
             actual = steps.vertex.referenceCount,
         )
     }
+
+    @Test
+    fun testDivertOccurrenceInner() {
+        val sourceStream = EventEmitter<Int>()
+
+        val source = Cell.constant(sourceStream)
+
+        val result = Cell.divert(source)
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result,
+        )
+
+        sourceStream.emitExternally(1)
+
+        changesVerifier.verifyReceivedEvent(expected = 1)
+    }
+
+    @Test
+    fun testDivertChangeOuter() {
+        val oldStream = EventStream.never<Int>()
+        val newStream = EventEmitter<Int>()
+
+        val source = MutableCell(initialValue = oldStream)
+
+        val result = Cell.divert(source)
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result,
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = oldStream.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 0,
+            actual = newStream.vertex.referenceCount,
+        )
+
+        source.setValueExternally(newStream)
+
+        assertEquals(
+            expected = 0,
+            actual = oldStream.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 1,
+            actual = newStream.vertex.referenceCount,
+        )
+
+        newStream.emitExternally(1)
+
+        changesVerifier.verifyReceivedEvent(expected = 1)
+
+        changesVerifier.dispose()
+
+        assertEquals(
+            expected = 0,
+            actual = oldStream.vertex.referenceCount,
+        )
+
+        assertEquals(
+            expected = 0,
+            actual = newStream.vertex.referenceCount,
+        )
+    }
+
+    @Test
+    fun testDivertChangeOldStreamOccurrenceInstantaneous() {
+        val sourceStream = EventEmitter<Int>()
+
+        val source = sourceStream.map { EventStream.never<String>() }
+            .hold(initialValue = sourceStream.map { "$it" }).sampleExternally()
+
+        val result = Cell.divert(source)
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result,
+        )
+
+        sourceStream.emitExternally(1)
+
+        changesVerifier.verifyReceivedEvent(expected = "1")
+    }
+
+    @Test
+    fun testDivertChangeNewStreamOccurrenceInstantaneous() {
+        val sourceStream = EventEmitter<Int>()
+
+        val source = sourceStream.map { sourceStream.map { "$it" } }
+            .hold(initialValue = EventStream.never()).sampleExternally()
+
+        val result = Cell.divert(source)
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result,
+        )
+
+        sourceStream.emitExternally(1)
+
+        changesVerifier.verifyNoReceivedEvents()
+    }
+
+    @Test
+    fun testDivertChangeBothStreamsOccurrenceInstantaneous() {
+        val sourceStream = EventEmitter<Char>()
+
+        val source = sourceStream.map { sourceStream.map { it.toString() } }
+            .hold(initialValue = sourceStream.map { it.uppercase() }).sampleExternally()
+
+        val result = Cell.divert(source)
+
+        val changesVerifier = EventStreamVerifier(
+            stream = result,
+        )
+
+        sourceStream.emitExternally('a')
+
+        changesVerifier.verifyReceivedEvent(expected = "A")
+    }
 }

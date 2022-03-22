@@ -5,7 +5,7 @@ import io.github.oxidefrp.oxide.Option
 import io.github.oxidefrp.oxide.Some
 import io.github.oxidefrp.oxide.getOrElse
 
-internal abstract class TransformingCellVertex<A> : ReactiveCellVertex<A>() {
+internal abstract class PausableCellVertex<A> : ReactiveCellVertex<A>() {
     private var cachedOldValue: Option<A> = None()
 
     final override val oldValue: A
@@ -14,13 +14,13 @@ internal abstract class TransformingCellVertex<A> : ReactiveCellVertex<A>() {
     final override fun onFirstDependencyAdded() {
         cachedOldValue = Some(sampleOldValue())
 
-        onTransformationResumed()
+        onResumed()
     }
 
     final override fun onLastDependencyRemoved() {
         cachedOldValue = None()
 
-        onTransformationPaused()
+        onPaused()
     }
 
     override fun storeNewValue(newValue: A) {
@@ -32,9 +32,9 @@ internal abstract class TransformingCellVertex<A> : ReactiveCellVertex<A>() {
 
     }
 
-    abstract fun onTransformationResumed()
+    abstract fun onResumed()
 
-    abstract fun onTransformationPaused()
+    abstract fun onPaused()
 
     abstract fun sampleOldValue(): A
 }

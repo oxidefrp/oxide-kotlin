@@ -10,13 +10,13 @@ import io.github.oxidefrp.oxide.getOrElse
 
 internal class SwitchCellVertex<A>(
     private val source: CellVertex<Cell<A>>,
-) : TransformingCellVertex<A>() {
+) : PausableCellVertex<A>() {
     private var outerSubscription: Subscription? = null
 
     private var innerSubscription: Subscription? = null
 
-    override fun onTransformationResumed() {
-        val innerCell = source.oldValue.vertex
+    override fun onResumed() {
+        val innerCellVertex = source.oldValue.vertex
 
         if (outerSubscription != null) {
             throw RuntimeException("Critical: there's already a remembered outer subscription")
@@ -27,10 +27,10 @@ internal class SwitchCellVertex<A>(
         }
 
         outerSubscription = source.registerDependent(this)
-        innerSubscription = innerCell.registerDependent(this)
+        innerSubscription = innerCellVertex.registerDependent(this)
     }
 
-    override fun onTransformationPaused() {
+    override fun onPaused() {
         val outerSubscription = this.outerSubscription
             ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
@@ -58,6 +58,7 @@ internal class SwitchCellVertex<A>(
                     ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
                 subscription.cancel()
+
                 innerSubscription = newInnerCellVertex.registerDependent(this)
 
                 Some(
