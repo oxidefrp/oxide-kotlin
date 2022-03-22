@@ -293,7 +293,7 @@ class EventStreamOperatorsUnitTests {
             actual = steps.vertex.referenceCount,
         )
 
-        val result: Cell<Int> = steps.hold(1)
+        val result: Cell<Int> = steps.hold(1).sampleExternally()
 
         assertEquals(
             expected = 1,

@@ -13,7 +13,7 @@ fun main() {
     GlobalScope.launch {
         val emitter = EventEmitter<Int>()
 
-        var result: Cell<Int>? = emitter.hold(0)
+        var result: Cell<Int>? = emitter.hold(0).sampleExternally()
 
         emitter.emitExternally(1)
 

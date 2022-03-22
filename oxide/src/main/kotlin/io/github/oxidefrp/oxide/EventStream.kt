@@ -11,6 +11,9 @@ import io.github.oxidefrp.oxide.event_stream.ProbeEachEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.ProbeEventStreamVertex
 import io.github.oxidefrp.oxide.event_stream.Subscription
 import io.github.oxidefrp.oxide.event_stream.SubscriptionVertex
+import io.github.oxidefrp.oxide.signal.ConstantSignalVertex
+import io.github.oxidefrp.oxide.signal.HoldSignalVertex
+import io.github.oxidefrp.oxide.signal.SignalVertex
 
 abstract class EventStream<out A> {
     internal abstract val vertex: EventStreamVertex<A>
@@ -81,10 +84,11 @@ fun <A> EventStream<A>.mergeWith(
     )
 }
 
-fun <A> EventStream<A>.hold(initialValue: A): Cell<A> =
-    object : Cell<A>() {
-        override val vertex: CellVertex<A> = HoldCellVertex(
-            steps = this@hold.vertex,
-            initialValue = initialValue,
-        )
+fun <A> EventStream<A>.hold(initialValue: A): Signal<Cell<A>> =
+    object : Signal<Cell<A>>() {
+        override val vertex: SignalVertex<Cell<A>> =
+            HoldSignalVertex(
+                steps = this@hold.vertex,
+                initialValue = initialValue,
+            )
     }

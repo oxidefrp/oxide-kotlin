@@ -194,10 +194,14 @@ class CellOperatorsUnitTests {
     fun testSwitchChangeInstantaneous() {
         val sourceStream = EventEmitter<Int>()
 
-        val cell1 = sourceStream.hold(initialValue = 1)
-        val cell2 = sourceStream.map { -it }.hold(initialValue = -1)
+        val cell1 = sourceStream
+            .hold(initialValue = 1).sampleExternally()
 
-        val source = sourceStream.map { cell2 }.hold(cell1)
+        val cell2 = sourceStream.map { -it }
+            .hold(initialValue = -1).sampleExternally()
+
+        val source = sourceStream.map { cell2 }
+            .hold(cell1).sampleExternally()
 
         val result = Cell.switch(source)
 
