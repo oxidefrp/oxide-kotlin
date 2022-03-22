@@ -1,6 +1,6 @@
-import io.github.oxidefrp.oxide.Cell
-import io.github.oxidefrp.oxide.EventEmitter
-import io.github.oxidefrp.oxide.hold
+import io.github.oxidefrp.oxide.core.Cell
+import io.github.oxidefrp.oxide.core.EventEmitter
+import io.github.oxidefrp.oxide.core.hold
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
