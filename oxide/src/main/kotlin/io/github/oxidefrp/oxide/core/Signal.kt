@@ -3,6 +3,7 @@ package io.github.oxidefrp.oxide.core
 import io.github.oxidefrp.oxide.core.signal.ApplySignalVertex
 import io.github.oxidefrp.oxide.core.signal.ConstantSignalVertex
 import io.github.oxidefrp.oxide.core.signal.MapSignalVertex
+import io.github.oxidefrp.oxide.core.signal.SampleSignalVertex
 import io.github.oxidefrp.oxide.core.signal.SignalVertex
 import io.github.oxidefrp.oxide.core.signal.SourceSignalVertex
 
@@ -12,6 +13,12 @@ abstract class Signal<out A> {
             object : Signal<A>() {
                 override val vertex: SignalVertex<A> =
                     ConstantSignalVertex(value = value)
+            }
+
+        fun <A> sample(signal: Signal<Signal<A>>): Signal<A> =
+            object : Signal<A>() {
+                override val vertex: SignalVertex<A> =
+                    SampleSignalVertex(signal = signal.vertex)
             }
 
         fun <A> source(sampleExternal: () -> A): Signal<A> =
@@ -82,6 +89,9 @@ abstract class Signal<out A> {
                     transform = transform,
                 )
         }
+
+    fun <B> sampleOf(transform: (A) -> Signal<B>): Signal<B> =
+        sample(map(transform))
 
     fun sampleExternally(): A = Transaction.wrap {
         vertex.pullCurrentValue(transaction = it)

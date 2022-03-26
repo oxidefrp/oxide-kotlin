@@ -165,4 +165,40 @@ class SignalOperatorsUnitTests {
             actual = result.sampleExternally(),
         )
     }
+
+    @Test
+    fun testSample() {
+        val innerSignal1 = SignalVerifier<Int>()
+        val innerSignal2 = SignalVerifier<Int>()
+
+        val outerSignal = SignalVerifier<Signal<Int>>()
+
+        outerSignal.prepareValue(innerSignal1.signal)
+
+        val result = Signal.sample(
+            signal = outerSignal.signal,
+        )
+
+        innerSignal1.prepareValue(1)
+        innerSignal2.prepareValue(-1)
+
+        assertEquals(
+            expected = 1,
+            actual = result.sampleExternally(),
+        )
+
+        outerSignal.prepareValue(innerSignal2.signal)
+
+        assertEquals(
+            expected = -1,
+            actual = result.sampleExternally(),
+        )
+
+        innerSignal2.prepareValue(-2)
+
+        assertEquals(
+            expected = -2,
+            actual = result.sampleExternally(),
+        )
+    }
 }
