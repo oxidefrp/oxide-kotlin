@@ -1,16 +1,18 @@
 package io.github.oxidefrp.oxide.core
 
-import io.github.oxidefrp.oxide.core.cell.ApplyCellVertex
-import io.github.oxidefrp.oxide.core.cell.ConstantCellVertex
-import io.github.oxidefrp.oxide.core.cell.MapCellVertex
-import io.github.oxidefrp.oxide.core.cell.SwitchCellVertex
-import io.github.oxidefrp.oxide.core.event_stream.CellVertex
-import io.github.oxidefrp.oxide.core.event_stream.DivertEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.EventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.ObservingEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.Subscription
-import io.github.oxidefrp.oxide.core.signal.SamplingSignalVertex
-import io.github.oxidefrp.oxide.core.signal.SignalVertex
+import io.github.oxidefrp.oxide.core.impl.Option
+import io.github.oxidefrp.oxide.core.impl.Transaction
+import io.github.oxidefrp.oxide.core.impl.cell.ApplyCellVertex
+import io.github.oxidefrp.oxide.core.impl.cell.ConstantCellVertex
+import io.github.oxidefrp.oxide.core.impl.cell.MapCellVertex
+import io.github.oxidefrp.oxide.core.impl.cell.SwitchCellVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.CellVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.DivertEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.EventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.ObservingEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
+import io.github.oxidefrp.oxide.core.impl.signal.SamplingSignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.SignalVertex
 
 internal class CellSampleSignalVertex<A>(
     private val cell: CellVertex<A>,

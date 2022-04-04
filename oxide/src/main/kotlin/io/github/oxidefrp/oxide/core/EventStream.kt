@@ -1,16 +1,16 @@
 package io.github.oxidefrp.oxide.core
 
-import io.github.oxidefrp.oxide.core.event_stream.EventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.FilterEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.MapEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.MergeEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.NeverEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.ProbeEachEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.ProbeEventStreamVertex
-import io.github.oxidefrp.oxide.core.event_stream.Subscription
-import io.github.oxidefrp.oxide.core.event_stream.SubscriptionVertex
-import io.github.oxidefrp.oxide.core.signal.HoldSignalVertex
-import io.github.oxidefrp.oxide.core.signal.SignalVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.EventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.FilterEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.MapEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.MergeEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.NeverEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.ProbeEachEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.ProbeEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
+import io.github.oxidefrp.oxide.core.impl.event_stream.SubscriptionVertex
+import io.github.oxidefrp.oxide.core.impl.signal.HoldSignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.SignalVertex
 
 abstract class EventStream<out A> {
     internal abstract val vertex: EventStreamVertex<A>

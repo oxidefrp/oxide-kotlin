@@ -1,11 +1,12 @@
 package io.github.oxidefrp.oxide.core
 
-import io.github.oxidefrp.oxide.core.signal.ApplySignalVertex
-import io.github.oxidefrp.oxide.core.signal.ConstantSignalVertex
-import io.github.oxidefrp.oxide.core.signal.MapSignalVertex
-import io.github.oxidefrp.oxide.core.signal.SampleSignalVertex
-import io.github.oxidefrp.oxide.core.signal.SignalVertex
-import io.github.oxidefrp.oxide.core.signal.SourceSignalVertex
+import io.github.oxidefrp.oxide.core.impl.Transaction
+import io.github.oxidefrp.oxide.core.impl.signal.ApplySignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.ConstantSignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.MapSignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.SampleSignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.SignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.SourceSignalVertex
 
 abstract class Signal<out A> {
     companion object {
