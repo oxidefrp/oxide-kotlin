@@ -1,9 +1,11 @@
 package io.github.oxidefrp.oxide.core
 
+import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class EventStreamVerifier<A>(
@@ -55,6 +57,63 @@ class EventStreamVerifier<A>(
 }
 
 class EventStreamOperatorsUnitTests {
+    @Test
+    fun testSource() {
+        var emitOrNull: ((Int) -> Unit)? = null
+
+        var isCancelled = false
+
+        val stream = EventStream.source<Int> {
+            if (emitOrNull != null) throw IllegalStateException("Emit function is already remembered")
+
+            emitOrNull = it
+
+            object : Subscription {
+                override fun cancel() {
+                    if (isCancelled) throw IllegalStateException("Subscription is already cancelled")
+                    isCancelled = true
+                }
+            }
+        }
+
+        assertEquals(
+            expected = null,
+            actual = emitOrNull,
+        )
+
+        val verifier = EventStreamVerifier(
+            stream = stream,
+        )
+
+        val emit = assertNotNull(actual = emitOrNull)
+
+        verifier.verifyNoReceivedEvents()
+
+        emit(10)
+
+        verifier.verifyReceivedEvent(10)
+
+        emit(20)
+
+        verifier.verifyReceivedEvent(20)
+
+        emit(30)
+
+        verifier.verifyReceivedEvent(30)
+
+        assertEquals(
+            expected = false,
+            actual = isCancelled,
+        )
+
+        verifier.dispose()
+
+        assertEquals(
+            expected = true,
+            actual = isCancelled,
+        )
+    }
+
     @Test
     fun testNever() {
         val stream = EventStream.never<Int>()

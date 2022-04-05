@@ -7,6 +7,7 @@ import io.github.oxidefrp.oxide.core.impl.event_stream.MergeEventStreamVertex
 import io.github.oxidefrp.oxide.core.impl.event_stream.NeverEventStreamVertex
 import io.github.oxidefrp.oxide.core.impl.event_stream.ProbeEachEventStreamVertex
 import io.github.oxidefrp.oxide.core.impl.event_stream.ProbeEventStreamVertex
+import io.github.oxidefrp.oxide.core.impl.event_stream.SourceEventStreamVertex
 import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
 import io.github.oxidefrp.oxide.core.impl.event_stream.SubscriptionVertex
 import io.github.oxidefrp.oxide.core.impl.signal.HoldSignalVertex
@@ -16,6 +17,15 @@ abstract class EventStream<out A> {
     internal abstract val vertex: EventStreamVertex<A>
 
     companion object {
+        fun <A> source(
+            subscribe: (emit: (A) -> Unit) -> Subscription,
+        ): EventStream<A> =
+            object : EventStream<A>() {
+                override val vertex: EventStreamVertex<A> = SourceEventStreamVertex(
+                    subscribe = subscribe,
+                )
+            }
+
         fun <A> never(): EventStream<A> =
             object : EventStream<A>() {
                 override val vertex: EventStreamVertex<A> =
