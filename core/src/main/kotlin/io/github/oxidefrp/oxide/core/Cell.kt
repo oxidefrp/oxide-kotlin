@@ -128,6 +128,9 @@ abstract class Cell<out A> {
         }
     }
 
+    val newValues: EventStream<A>
+        get() = changes.map { it.newValue }
+
     val value: Signal<A> by lazy {
         object : Signal<A>() {
             override val vertex: SignalVertex<A> =
@@ -146,4 +149,17 @@ abstract class Cell<out A> {
 
     fun <B> switchOf(transform: (A) -> Cell<B>): Cell<B> =
         switch(map(transform))
+
+    fun reactExternally(action: (A) -> Unit): Subscription {
+        val currentValue = value.sampleExternally()
+
+        action(currentValue)
+
+        return newValues.subscribe(action)
+    }
+
+    fun reactExternallyIndefinitely(action: (A) -> Unit) {
+        // TODO: Fix the leak
+        reactExternally(action)
+    }
 }

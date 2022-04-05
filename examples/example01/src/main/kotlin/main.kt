@@ -1,6 +1,7 @@
 import io.github.oxidefrp.oxide.core.EventStream
 import io.github.oxidefrp.oxide.core.Signal
 import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
+import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlin.math.PI
 import kotlin.math.sin
@@ -30,6 +31,31 @@ fun intervalNowStream(timeout: Int): EventStream<Double> {
     return stream.probe(now)
 }
 
+private fun subscribeToAnimationFrames(callback: () -> Unit): Subscription =
+    object : Subscription {
+        fun requestFrame(): Int = window.requestAnimationFrame {
+            callback()
+            requestNextFrame()
+        }
+
+        fun requestNextFrame() {
+            handle = requestFrame()
+        }
+
+        private var handle: Int = requestFrame()
+
+        override fun cancel() {
+            window.cancelAnimationFrame(handle)
+        }
+    }
+
+fun animationFrameStream(): EventStream<Unit> =
+    EventStream.source { emit ->
+        subscribeToAnimationFrames {
+            emit(Unit)
+        }
+    }
+
 fun main() {
     val now = performanceNow()
 
@@ -43,9 +69,20 @@ fun main() {
 
     val outputSignal = output.signal
 
-    val ticks = intervalStream(timeout = 100)
+    val ticks = animationFrameStream()
 
-    ticks.probe(outputSignal).subscribe {
-        println("Signal value: $it")
-    }
+    val widget = buildSignalMeter(
+        signal = outputSignal,
+        aMin = -1.5,
+        aMax = 1.5,
+        ticks = ticks,
+    ).map { signalMeter ->
+        Column(
+            children = listOf(
+                signalMeter,
+            ),
+        )
+    }.sampleExternally()
+
+    document.body!!.appendChild(widget.buildElement())
 }

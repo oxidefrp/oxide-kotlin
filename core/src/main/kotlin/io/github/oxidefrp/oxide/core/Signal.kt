@@ -1,6 +1,7 @@
 package io.github.oxidefrp.oxide.core
 
 import io.github.oxidefrp.oxide.core.impl.Transaction
+import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
 import io.github.oxidefrp.oxide.core.impl.signal.ApplySignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.ConstantSignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.MapSignalVertex
@@ -94,7 +95,23 @@ abstract class Signal<out A> {
     fun <B> sampleOf(transform: (A) -> Signal<B>): Signal<B> =
         sample(map(transform))
 
+    fun discretize(ticks: EventStream<Unit>): Signal<Cell<A>> =
+        this.sampleOf { initialValue ->
+            ticks.probe(this).hold(initialValue)
+        }
+
     fun sampleExternally(): A = Transaction.wrap {
         vertex.pullCurrentValue(transaction = it)
+    }
+
+    fun reactExternally(
+        action: (A) -> Unit,
+        ticks: EventStream<Unit>,
+    ): Subscription {
+        val currentValue = sampleExternally()
+
+        action(currentValue)
+
+        return ticks.probe(this).subscribe(action)
     }
 }
