@@ -1,5 +1,9 @@
 package io.github.oxidefrp.oxide.core
 
+import io.github.oxidefrp.oxide.core.impl.None
+import io.github.oxidefrp.oxide.core.impl.Option
+import io.github.oxidefrp.oxide.core.impl.Some
+import io.github.oxidefrp.oxide.core.impl.getOrElse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
