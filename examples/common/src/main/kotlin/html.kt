@@ -22,3 +22,19 @@ data class Column(
             this@Column.children.forEach { appendChild(it.buildElement()) }
         }
 }
+
+data class Row(
+    val children: List<HtmlWidget>,
+    val gap: Double,
+) : HtmlWidget() {
+    override fun buildElement(): Element =
+        createHtmlElement<HTMLDivElement>("div").apply {
+            style.display = "flex"
+            style.flexDirection = "row"
+            style.alignItems = "center"
+            style.justifyContent = "center"
+            style.setProperty("gap", "${gap}px")
+
+            this@Row.children.forEach { appendChild(it.buildElement()) }
+        }
+}

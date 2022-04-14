@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation(project(":core"))
-    implementation(project(":examples:common"))
 }
 
 kotlin {
