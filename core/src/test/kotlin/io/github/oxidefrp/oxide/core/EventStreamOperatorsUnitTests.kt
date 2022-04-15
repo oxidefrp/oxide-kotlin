@@ -298,7 +298,7 @@ class EventStreamOperatorsUnitTests {
     }
 
     @Test
-    fun testProbeEach() {
+    fun testSample() {
         val signalInput1 = SignalVerifier<Int>()
 
         val signalInput2 = SignalVerifier<Int>()
@@ -306,7 +306,7 @@ class EventStreamOperatorsUnitTests {
         val streamInput = EventEmitter<Signal<Int>>()
 
         val outputVerifier = EventStreamVerifier(
-            stream = EventStream.probeEach(streamInput),
+            stream = EventStream.sample(streamInput),
         )
 
         assertEquals(

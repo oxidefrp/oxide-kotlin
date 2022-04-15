@@ -32,7 +32,7 @@ abstract class EventStream<out A> {
                     NeverEventStreamVertex()
             }
 
-        fun <A> probeEach(stream: EventStream<Signal<A>>): EventStream<A> =
+        fun <A> sample(stream: EventStream<Signal<A>>): EventStream<A> =
             object : EventStream<A>() {
                 override val vertex: EventStreamVertex<A> = ProbeEachEventStreamVertex(
                     stream = stream.vertex,
@@ -68,8 +68,8 @@ abstract class EventStream<out A> {
     fun <B> probe(signal: Signal<B>): EventStream<B> =
         probe(signal) { _, b -> b }
 
-    fun <B> probeEachOf(selector: (A) -> Signal<B>): EventStream<B> =
-        probeEach(map(selector))
+    fun <B> sampleOf(selector: (A) -> Signal<B>): EventStream<B> =
+        sample(map(selector))
 
     fun subscribe(listener: (A) -> Unit): Subscription =
         vertex.registerDependent(
