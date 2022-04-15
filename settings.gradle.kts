@@ -8,4 +8,5 @@ include(
     "examples:example02",
     "examples:example03",
     "examples:example04",
+    "examples:example05",
 )

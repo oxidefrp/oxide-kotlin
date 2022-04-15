@@ -71,13 +71,14 @@ fun main() {
         ),
     ) { ball1Meter, ball2Meter, givenBallName, givenBallMeter ->
         Row(
+            gap = 16.0,
             children = listOf(
                 ball1Meter,
                 ball2Meter,
                 givenBallName,
                 givenBallMeter,
             ),
-            gap = 16.0,
+            padding = 4.0,
         )
     }.sampleExternally()
 

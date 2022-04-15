@@ -46,12 +46,13 @@ fun main() {
         )
     ) { xSignalMeter, ySignalMeter, xySignalMeter ->
         Row(
+            gap = 16.0,
             children = listOf(
                 xSignalMeter,
                 ySignalMeter,
                 xySignalMeter,
             ),
-            gap = 16.0,
+            padding = 4.0,
         )
     }.sampleExternally()
 

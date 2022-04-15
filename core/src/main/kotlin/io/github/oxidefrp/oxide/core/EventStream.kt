@@ -78,6 +78,10 @@ abstract class EventStream<out A> {
                 listener = listener,
             ),
         )
+
+    fun subscribeIndefinitely(listener: (A) -> Unit) {
+        subscribe(listener)
+    }
 }
 
 fun <A> EventStream<A>.mergeWith(
