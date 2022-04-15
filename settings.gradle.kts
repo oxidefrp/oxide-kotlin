@@ -6,4 +6,5 @@ include(
     "examples:export-examples",
     "examples:example01",
     "examples:example02",
+    "examples:example03",
 )
