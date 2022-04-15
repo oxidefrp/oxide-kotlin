@@ -50,3 +50,6 @@ fun animationFrameStream(): EventStream<Unit> =
             emit(Unit)
         }
     }
+
+fun Double.format(digits: Int): String =
+    this.asDynamic().toFixed(digits) as String

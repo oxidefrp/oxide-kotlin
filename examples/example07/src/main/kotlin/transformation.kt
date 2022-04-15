@@ -14,6 +14,3 @@ fun transform(
             "${d.format(2)} @ $n"
         }
     )
-
-private fun Double.format(digits: Int): String =
-    this.asDynamic().toFixed(digits) as String
