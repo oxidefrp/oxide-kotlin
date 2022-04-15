@@ -79,6 +79,27 @@ abstract class Signal<out A> {
                 sc,
             )
         }
+
+        fun <A, B, C, D, E> map4(
+            sa: Signal<A>,
+            sb: Signal<B>,
+            sc: Signal<C>,
+            sd: Signal<D>,
+            f: (a: A, b: B, c: C, d: D) -> E,
+        ): Signal<E> {
+            fun g(a: A) = fun(b: B) = fun(c: C) = fun(d: D) = f(a, b, c, d)
+
+            return apply(
+                apply(
+                    apply(
+                        sa.map(::g),
+                        sb,
+                    ),
+                    sc,
+                ),
+                sd,
+            )
+        }
     }
 
     internal abstract val vertex: SignalVertex<A>

@@ -1,3 +1,4 @@
+import io.github.oxidefrp.oxide.core.Cell
 import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLDivElement
@@ -9,6 +10,27 @@ abstract class HtmlWidget {
 
 private fun <E : HTMLElement> createHtmlElement(localName: String): E =
     document.createElement(localName).unsafeCast<E>()
+
+data class Text(
+    val text: Cell<String>,
+) : HtmlWidget() {
+    override fun buildElement(): Element =
+        createHtmlElement<HTMLDivElement>("div").apply {
+            var node = document.createTextNode(text.value.sampleExternally())
+
+            appendChild(node)
+
+            text.reactExternallyIndefinitely {
+                removeChild(node)
+
+                val newNode = document.createTextNode(it)
+
+                node = newNode
+
+                this.appendChild(newNode)
+            }
+        }
+}
 
 data class Column(
     val children: List<HtmlWidget>,
