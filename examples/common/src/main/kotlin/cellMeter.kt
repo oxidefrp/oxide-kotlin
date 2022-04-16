@@ -3,6 +3,7 @@ import io.github.oxidefrp.oxide.core.ValueChange
 
 fun buildCellMeter(
     cell: Cell<Any>,
+    width: Double = 200.0,
 ): Column {
     fun buildChangeRow(
         change: ValueChange<Any>,
@@ -75,7 +76,7 @@ fun buildCellMeter(
         children = listOf(
             statePreview,
             GrowableScrollView(
-                width = 200.0,
+                width = width,
                 height = 100.0,
                 addChild = cell.changes.map {
                     buildChangeRow(it)
