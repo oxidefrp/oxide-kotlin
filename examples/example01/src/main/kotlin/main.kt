@@ -1,18 +1,11 @@
+import examples.example01.transform
 import kotlinx.browser.document
-import kotlin.math.PI
-import kotlin.math.sin
-
-private const val sinPeriodMs = 5000
 
 fun main() {
-    val now = performanceNow()
-
-    val inputSignal = now.map { t ->
-        sin((2 * PI * t) / sinPeriodMs)
-    }
+    val now = performanceNowS()
 
     val output = transform(
-        signal = inputSignal,
+        now = now,
     )
 
     val outputSignal = output.signal
@@ -21,11 +14,13 @@ fun main() {
 
     val widget = buildSignalMeter(
         signal = outputSignal,
-        aMin = -1.5,
-        aMax = 1.5,
+        aMin = 0.25,
+        aMax = 2.75,
         ticks = ticks,
     ).map { signalMeter ->
-        Column(
+        Row(
+            gap = 16.0,
+            padding = 4.0,
             children = listOf(
                 signalMeter,
             ),

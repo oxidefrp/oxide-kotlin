@@ -20,6 +20,9 @@ fun intervalStream(timeout: Int): EventStream<Unit> =
 fun performanceNow(): Signal<Double> =
     Signal.source(window.performance::now)
 
+fun performanceNowS(): Signal<Double> =
+    performanceNow().map { it / 1000.0 }
+
 fun intervalNowStream(timeout: Int): EventStream<Double> {
     val now = performanceNow()
     val stream = intervalStream(timeout = timeout)
