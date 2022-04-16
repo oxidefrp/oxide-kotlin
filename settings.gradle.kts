@@ -18,4 +18,5 @@ include(
     "examples:example12",
     "examples:example13",
     "examples:example14",
+    "examples:example15",
 )
