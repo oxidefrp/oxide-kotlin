@@ -1,4 +1,5 @@
 import examples.exampleSignalMap2.transform
+import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.browser.document
 
 fun main() {
@@ -8,21 +9,38 @@ fun main() {
         now = now,
     )
 
-    val outputSignal = output.mappedSignal
-
     val ticks = animationFrameStream()
 
-    val widget = buildSignalMeter(
-        signal = outputSignal,
-        aMin = 0.25,
-        aMax = 2.75,
-        ticks = ticks,
-    ).map { signalMeter ->
+    val aMin = 0.25
+    val aMax = 2.75
+
+    val widget = Signal.map3(
+        buildSignalMeter(
+            signal = output.inputSignal1,
+            aMin = aMin,
+            aMax = aMax,
+            ticks = ticks,
+        ),
+        buildSignalMeter(
+            signal = output.inputSignal2,
+            aMin = aMin,
+            aMax = aMax,
+            ticks = ticks,
+        ),
+        buildSignalMeter(
+            signal = output.mappedSignal,
+            aMin = aMin,
+            aMax = aMax,
+            ticks = ticks,
+        ),
+    ) { inputSignal1Meter, inputSignal2Meter, mappedSignalMeter ->
         Row(
             gap = 16.0,
             padding = 4.0,
             children = listOf(
-                signalMeter,
+                inputSignal1Meter,
+                inputSignal2Meter,
+                mappedSignalMeter,
             ),
         )
     }.sampleExternally()

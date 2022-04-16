@@ -33,6 +33,8 @@ fun main() {
     val head = git.repository.resolve(Constants.HEAD)
     val headSha1 = head.name
 
+    println("HEAD SHA1: $headSha1")
+
     examplesRelativePath.listDirectoryEntries().filter {
         it.isDirectory() && it.name.startsWith("example")
     }.forEach { examplePath ->
@@ -62,7 +64,7 @@ fun main() {
             overwrite = true,
         )
 
-        println("[(source code)](https://github.com/oxidefrp/oxide-kotlin/blob/$headSha1/examples/$exampleName/src/main/kotlin/examples/$exampleName/transformation.kt) [(live preview)](https://$siteHostname/examples/$exampleName/)")
+        println("[(source code)](https://github.com/oxidefrp/oxide-kotlin/blob/master/examples/$exampleName/src/main/kotlin/examples/$exampleName/transformation.kt) [(live preview)](https://$siteHostname/examples/$exampleName/)")
 
         println()
     }
