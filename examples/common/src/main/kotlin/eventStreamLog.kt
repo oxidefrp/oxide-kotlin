@@ -3,6 +3,7 @@ import io.github.oxidefrp.oxide.core.EventStream
 
 fun buildEventStreamLog(
     eventStream: EventStream<Any>,
+    width: Double = 200.0,
 ): Column {
     fun buildRow(text: String) = Row(
         borderStyle = BorderStyle(
@@ -36,7 +37,7 @@ fun buildEventStreamLog(
         ),
         children = listOf(
             GrowableScrollView(
-                width = 200.0,
+                width = width,
                 height = 100.0,
                 addChild = eventStream.map {
                     buildRow(it.toString())
