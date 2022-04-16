@@ -22,4 +22,5 @@ include(
     "examples:exampleSignal",
     "examples:exampleSignalMap",
     "examples:exampleSignalMap2",
+    "examples:exampleSignalSample",
 )

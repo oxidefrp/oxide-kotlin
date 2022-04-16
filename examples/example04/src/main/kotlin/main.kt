@@ -84,11 +84,3 @@ fun main() {
 
     document.body!!.appendChild(widget.buildElement())
 }
-
-fun buildSignalText(
-    text: Signal<String>,
-    ticks: EventStream<Unit>,
-) =
-    text.discretize(ticks = ticks).map {
-        Text(text = it)
-    }

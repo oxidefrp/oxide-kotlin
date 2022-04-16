@@ -1,4 +1,4 @@
-import examples.exampleSignalMap2.transform
+import examples.exampleSignalSample.transform
 import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.browser.document
 
@@ -11,36 +11,41 @@ fun main() {
 
     val ticks = animationFrameStream()
 
-    val aMin = 0.0
-    val aMax = 6.0
+    val aMin = 0.25
+    val aMax = 2.75
 
-    val widget = Signal.map3(
+    val widget = Signal.map4(
         buildSignalMeter(
-            signal = output.inputSignal1,
+            signal = output.innerSignal1,
             aMin = aMin,
             aMax = aMax,
             ticks = ticks,
         ),
         buildSignalMeter(
-            signal = output.inputSignal2,
+            signal = output.innerSignal2,
             aMin = aMin,
             aMax = aMax,
+            ticks = ticks,
+        ),
+        buildSignalText(
+            text = output.sampledSignalName,
             ticks = ticks,
         ),
         buildSignalMeter(
-            signal = output.mappedSignal,
+            signal = output.sampledSignal,
             aMin = aMin,
             aMax = aMax,
             ticks = ticks,
         ),
-    ) { inputSignal1Meter, inputSignal2Meter, mappedSignalMeter ->
+    ) { innerSignal1Meter, innerSignal2Meter, sampledSignalName, sampledSignalMeter ->
         Row(
             gap = 16.0,
             padding = 4.0,
             children = listOf(
-                inputSignal1Meter,
-                inputSignal2Meter,
-                mappedSignalMeter,
+                innerSignal1Meter,
+                innerSignal2Meter,
+                sampledSignalName,
+                sampledSignalMeter,
             ),
         )
     }.sampleExternally()

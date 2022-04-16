@@ -11,8 +11,8 @@ fun main() {
 
     val ticks = animationFrameStream()
 
-    val aMin = 0.25
-    val aMax = 2.75
+    val aMin = 0.0
+    val aMax = 4.0
 
     val widget = Signal.map2(
         buildSignalMeter(

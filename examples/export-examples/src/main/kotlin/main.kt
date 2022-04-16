@@ -64,7 +64,7 @@ fun main() {
             overwrite = true,
         )
 
-        println("[(source code)](https://github.com/oxidefrp/oxide-kotlin/blob/master/examples/$exampleName/src/main/kotlin/examples/$exampleName/transformation.kt) [(live preview)](https://$siteHostname/examples/$exampleName/)")
+        println("[(source code)](https://github.com/oxidefrp/oxide-kotlin/blob/main/examples/$exampleName/src/main/kotlin/examples/$exampleName/transformation.kt) [(live preview)](https://$siteHostname/examples/$exampleName/)")
 
         println()
     }
