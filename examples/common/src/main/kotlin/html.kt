@@ -82,7 +82,7 @@ data class Column(
         createHtmlElement<HTMLDivElement>("div").apply {
             style.display = "flex"
             style.flexDirection = "column"
-            style.alignItems = "center"
+            style.alignItems = "stretch"
 
             borderStyle?.applyTo(style)
 

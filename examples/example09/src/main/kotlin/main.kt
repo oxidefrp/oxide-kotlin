@@ -1,0 +1,40 @@
+import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.oxide.core.hold
+import kotlinx.browser.document
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
+
+private const val streamIntervalMs = 2000
+
+fun consecutiveIntsStream(): EventStream<Int> {
+    var nextNumber = 0
+
+    return intervalStream(timeout = streamIntervalMs).map {
+        /// FIXME: This escapes the semantics
+        // Replace this with accum when loops are implemented
+        ++nextNumber
+    }
+}
+
+fun main() {
+    val inputCell = consecutiveIntsStream().hold(0).sampleExternally()
+
+    val output = transform(
+        inputCell = inputCell,
+    )
+
+    val outputCell = output.outputCell
+
+    val widget = Row(
+        gap = 16.0,
+        children = listOf(
+            buildCellMeter(inputCell),
+            buildCellMeter(outputCell),
+        ),
+        padding = 4.0,
+    )
+
+    document.body!!.appendChild(widget.buildElement())
+}
