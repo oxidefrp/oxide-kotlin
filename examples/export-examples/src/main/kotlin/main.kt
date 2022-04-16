@@ -1,3 +1,6 @@
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Constants
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.copyTo
@@ -26,6 +29,10 @@ fun main() {
         throw IllegalStateException("Target path ($targetPath) must exist")
     }
 
+    val git = Git.open(File("."))
+    val head = git.repository.resolve(Constants.HEAD)
+    val headSha1 = head.name
+
     examplesRelativePath.listDirectoryEntries().filter {
         it.isDirectory() && it.name.startsWith("example")
     }.forEach { examplePath ->
@@ -43,6 +50,7 @@ fun main() {
 
         println("Copying $indexPath to $targetIndexPath")
         println("Copying $jsBundlePath to $targetJsBundlePath")
+        println()
 
         indexPath.copyTo(
             target = targetIndexPath,
@@ -53,5 +61,9 @@ fun main() {
             target = targetJsBundlePath,
             overwrite = true,
         )
+
+        println("[(source code)](https://github.com/oxidefrp/oxide-kotlin/blob/$headSha1/examples/$exampleName/src/main/kotlin/examples/$exampleName/transformation.kt) [(live preview)](https://$siteHostname/examples/$exampleName/)")
+
+        println()
     }
 }

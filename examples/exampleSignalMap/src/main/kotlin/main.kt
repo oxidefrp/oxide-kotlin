@@ -1,0 +1,31 @@
+import examples.exampleSignalMap.transform
+import kotlinx.browser.document
+
+fun main() {
+    val now = performanceNowS()
+
+    val output = transform(
+        now = now,
+    )
+
+    val outputSignal = output.mappedSignal
+
+    val ticks = animationFrameStream()
+
+    val widget = buildSignalMeter(
+        signal = outputSignal,
+        aMin = 0.25,
+        aMax = 2.75,
+        ticks = ticks,
+    ).map { signalMeter ->
+        Row(
+            gap = 16.0,
+            padding = 4.0,
+            children = listOf(
+                signalMeter,
+            ),
+        )
+    }.sampleExternally()
+
+    document.body!!.appendChild(widget.buildElement())
+}

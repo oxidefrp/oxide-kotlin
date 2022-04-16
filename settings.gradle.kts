@@ -19,4 +19,7 @@ include(
     "examples:example13",
     "examples:example14",
     "examples:example15",
+    "examples:exampleSignal",
+    "examples:exampleSignalMap",
+    "examples:exampleSignalMap2",
 )

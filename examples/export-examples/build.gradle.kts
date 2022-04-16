@@ -5,6 +5,10 @@ plugins {
     application
 }
 
+dependencies {
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.1.0.202203080745-r")
+}
+
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
