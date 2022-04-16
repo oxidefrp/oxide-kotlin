@@ -34,7 +34,12 @@ fun main() {
     val aMax = 1.25
 
     val widget = Signal.map1(
-        buildSignalMeter(inputSignal, aMin, aMax, ticks = ticks)
+        buildSignalMeter(
+            signal = inputSignal,
+            aMin = aMin,
+            aMax = aMax,
+            ticks = ticks,
+        )
     ) { inputSignalMeter ->
         Row(
             gap = 16.0,
