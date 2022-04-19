@@ -1,3 +1,4 @@
+import common.Point
 import io.github.oxidefrp.oxide.core.Signal
 
 data class Output(

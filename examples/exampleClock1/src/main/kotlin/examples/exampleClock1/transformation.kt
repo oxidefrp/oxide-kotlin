@@ -1,11 +1,12 @@
 package examples.exampleClock1
 
-import Point
-import SvgCircle
-import SvgGroup
-import SvgLine
-import SvgSvg
-import SvgTranslate
+import common.Point
+import common.SvgCircle
+import common.SvgGroup
+import common.SvgLine
+import common.SvgSvg
+import common.SvgTranslate
+import common.Transform
 import io.github.oxidefrp.oxide.core.Cell
 import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.datetime.Instant

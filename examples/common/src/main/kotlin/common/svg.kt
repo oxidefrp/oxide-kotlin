@@ -1,3 +1,7 @@
+package common
+
+import HtmlWidget
+import animationFrameStream
 import io.github.oxidefrp.oxide.core.Cell
 import io.github.oxidefrp.oxide.core.EventStream
 import io.github.oxidefrp.oxide.core.Signal
@@ -126,9 +130,9 @@ private fun linkSvgTransform(
 
     element.transform.baseVal.initialize(svgTransform)
 
-    transformDiscretized.newValues.subscribeIndefinitely { transform ->
+    transformDiscretized.newValues.subscribeIndefinitely { transformNow ->
         svgTransform.setMatrix(
-            matrix = transform.toSVGMatrix(svg),
+            matrix = transformNow.toSVGMatrix(svg),
         )
     }
 }
