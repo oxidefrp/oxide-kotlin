@@ -23,4 +23,6 @@ include(
     "examples:exampleSignalMap",
     "examples:exampleSignalMap2",
     "examples:exampleSignalSample",
+    "examples:exampleEventStream",
+    "examples:exampleEventStreamMap",
 )
