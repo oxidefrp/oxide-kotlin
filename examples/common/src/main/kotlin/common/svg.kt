@@ -73,7 +73,7 @@ data class SvgSvg(
 ) : HtmlWidget() {
     override fun buildElement(): SVGElement =
         createSvgElement<SVGSVGElement>("svg").apply {
-//            setAttribute("xmlns", "http://www.w3.org/2000/svg")
+            setAttribute("xmlns", "http://www.w3.org/2000/svg")
             setAttribute("viewBox", "0 0 ${this@SvgSvg.width} ${this@SvgSvg.height}")
             setAttribute("width", this@SvgSvg.width.toString())
             setAttribute("height", this@SvgSvg.height.toString())
