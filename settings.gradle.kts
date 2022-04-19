@@ -25,4 +25,5 @@ include(
     "examples:exampleSignalSample",
     "examples:exampleEventStream",
     "examples:exampleEventStreamMap",
+    "examples:exampleClock1",
 )

@@ -24,8 +24,8 @@ fun buildSignalMeter(
                 ),
                 children = listOf(
                     SvgLine(
-                        a = Point(0.0, meterMin),
-                        b = Point(0.0, meterMax),
+                        p1 = Point(0.0, meterMin),
+                        p2 = Point(0.0, meterMax),
                     ),
                     SvgCircle(
                         c = discretizedSignal.map { a ->

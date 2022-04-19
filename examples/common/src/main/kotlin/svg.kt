@@ -1,6 +1,15 @@
 import io.github.oxidefrp.oxide.core.Cell
+import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.browser.document
+import org.w3c.dom.svg.SVGCircleElement
 import org.w3c.dom.svg.SVGElement
+import org.w3c.dom.svg.SVGGElement
+import org.w3c.dom.svg.SVGGraphicsElement
+import org.w3c.dom.svg.SVGLineElement
+import org.w3c.dom.svg.SVGPolylineElement
+import org.w3c.dom.svg.SVGSVGElement
+import org.w3c.dom.svg.SVGTextElement
 
 data class Point(
     val x: Double,
@@ -44,11 +53,14 @@ data class SvgScale(
 }
 
 abstract class SvgWidget {
-    abstract fun buildElement(): SVGElement
+    abstract fun buildElement(
+        svg: SVGSVGElement,
+        ticks: EventStream<Unit>,
+    ): SVGElement
 }
 
-private fun createSvgElement(qualifiedName: String): SVGElement =
-    document.createElementNS("http://www.w3.org/2000/svg", qualifiedName).unsafeCast<SVGElement>()
+private inline fun <reified E : SVGElement> createSvgElement(qualifiedName: String): E =
+    document.createElementNS("http://www.w3.org/2000/svg", qualifiedName).unsafeCast<E>()
 
 data class SvgSvg(
     val width: Double,
@@ -56,14 +68,21 @@ data class SvgSvg(
     val children: List<SvgWidget>,
 ) : HtmlWidget() {
     override fun buildElement(): SVGElement =
-        createSvgElement("svg").apply {
+        createSvgElement<SVGSVGElement>("svg").apply {
 //            setAttribute("xmlns", "http://www.w3.org/2000/svg")
-            setAttribute("viewBox", "0 0 ${width.toString()} ${height.toString()}")
-            setAttribute("width", width.toString())
-            setAttribute("height", height.toString())
+            setAttribute("viewBox", "0 0 ${this@SvgSvg.width} ${this@SvgSvg.height}")
+            setAttribute("width", this@SvgSvg.width.toString())
+            setAttribute("height", this@SvgSvg.height.toString())
+
+            val ticks = animationFrameStream()
 
             this@SvgSvg.children.forEach {
-                appendChild(it.buildElement())
+                appendChild(
+                    it.buildElement(
+                        svg = this,
+                        ticks = ticks,
+                    ),
+                )
             }
         }
 }
@@ -72,34 +91,83 @@ data class SvgGroup(
     val transform: SvgTransform? = null,
     val children: List<SvgWidget>,
 ) : SvgWidget() {
-    override fun buildElement(): SVGElement =
-        createSvgElement("g").apply {
-
-            transform?.let {
+    override fun buildElement(
+        svg: SVGSVGElement,
+        ticks: EventStream<Unit>,
+    ): SVGElement =
+        createSvgElement<SVGGElement>("g").apply {
+            this@SvgGroup.transform?.let {
                 setAttribute("transform", it.buildTransformString())
             }
 
             this@SvgGroup.children.forEach {
-                appendChild(it.buildElement())
+                appendChild(
+                    it.buildElement(
+                        svg = svg,
+                        ticks = ticks,
+                    ),
+                )
             }
         }
 }
 
+private fun linkSvgTransform(
+    svg: SVGSVGElement,
+    ticks: EventStream<Unit>,
+    element: SVGGraphicsElement,
+    transform: Signal<Transform>,
+) {
+    val transformDiscretized = transform.discretize(ticks = ticks).sampleExternally()
+
+    val initialTransform = transformDiscretized.value.sampleExternally()
+
+    val svgTransform =
+        svg.createSVGTransformFromMatrix(initialTransform.toSVGMatrix(svg))
+
+    element.transform.baseVal.initialize(svgTransform)
+
+    transformDiscretized.newValues.subscribeIndefinitely { transform ->
+        svgTransform.setMatrix(
+            matrix = transform.toSVGMatrix(svg),
+        )
+    }
+}
+
 data class SvgLine(
-    val a: Point,
-    val b: Point,
+    val p1: Point,
+    val p2: Point,
+    val transform: Signal<Transform>? = null,
     val fill: String = "none",
     val stroke: String = "black",
+    val strokeWidth: Double? = null,
 ) : SvgWidget() {
-    override fun buildElement(): SVGElement =
-        createSvgElement("line").apply {
-            setAttribute("x1", a.x.toString())
-            setAttribute("y1", a.y.toString())
-            setAttribute("x2", b.x.toString())
-            setAttribute("y2", b.y.toString())
+    override fun buildElement(
+        svg: SVGSVGElement,
+        ticks: EventStream<Unit>,
+    ): SVGElement =
+        createSvgElement<SVGLineElement>("line").apply {
+            x1.baseVal.value = p1.x.toFloat()
+            y1.baseVal.value = p1.y.toFloat()
+
+            x2.baseVal.value = p2.x.toFloat()
+            y2.baseVal.value = p2.y.toFloat()
 
             setAttribute("fill", fill)
             setAttribute("stroke", stroke)
+
+            this@SvgLine.transform?.let {
+                linkSvgTransform(
+                    svg = svg,
+                    ticks = ticks,
+                    element = this,
+                    transform = it,
+                )
+            }
+
+            strokeWidth?.let {
+                setAttribute("stroke-width", it.toString())
+            }
+
         }
 }
 
@@ -109,38 +177,42 @@ data class SvgPolyline(
     val stroke: String = "black",
     val strokeWidth: Double? = null,
 ) : SvgWidget() {
-    override fun buildElement(): SVGElement =
-        createSvgElement("polyline").apply {
-            setAttribute(
-                "points",
-                points.joinToString(separator = " ") { it.toSvgString() },
-            )
+    override fun buildElement(
+        svg: SVGSVGElement,
+        ticks: EventStream<Unit>,
+    ) = createSvgElement<SVGPolylineElement>("polyline").apply {
+        setAttribute(
+            "points",
+            this@SvgPolyline.points.joinToString(separator = " ") { it.toSvgString() },
+        )
 
-            setAttribute("fill", fill)
-            setAttribute("stroke", stroke)
+        setAttribute("fill", fill)
+        setAttribute("stroke", stroke)
 
-            strokeWidth?.let {
-                setAttribute("stroke-width", it.toString())
-            }
+        strokeWidth?.let {
+            setAttribute("stroke-width", it.toString())
         }
+    }
 }
 
 data class SvgText(
     val p: Point,
     val text: String,
 ) : SvgWidget() {
-    override fun buildElement(): SVGElement =
-        createSvgElement("text").apply {
-            setAttribute("x", p.x.toString())
-            setAttribute("y", p.y.toString())
-            setAttribute("text-anchor", "middle")
-            setAttribute("dominant-baseline", "middle")
+    override fun buildElement(
+        svg: SVGSVGElement,
+        ticks: EventStream<Unit>,
+    ) = createSvgElement<SVGTextElement>("text").apply {
+        setAttribute("x", p.x.toString())
+        setAttribute("y", p.y.toString())
+        setAttribute("text-anchor", "middle")
+        setAttribute("dominant-baseline", "middle")
 
-            setAttribute("fill", "black")
-            setAttribute("stroke", "none")
+        setAttribute("fill", "black")
+        setAttribute("stroke", "none")
 
-            appendChild(document.createTextNode(text))
-        }
+        appendChild(document.createTextNode(text))
+    }
 }
 
 data class SvgCircle(
@@ -148,17 +220,24 @@ data class SvgCircle(
     val r: Double,
     val fill: String = "none",
     val stroke: String = "black",
+    val strokeWidth: Double? = null,
 ) : SvgWidget() {
-    override fun buildElement(): SVGElement =
-        createSvgElement("circle").apply {
-            c.reactExternallyIndefinitely {
-                setAttribute("cx", it.x.toString())
-                setAttribute("cy", it.y.toString())
-            }
-
-            setAttribute("r", r.toString())
-
-            setAttribute("fill", fill)
-            setAttribute("stroke", stroke)
+    override fun buildElement(
+        svg: SVGSVGElement,
+        ticks: EventStream<Unit>,
+    ) = createSvgElement<SVGCircleElement>("circle").apply {
+        c.reactExternallyIndefinitely {
+            cx.baseVal.value = it.x.toFloat()
+            cy.baseVal.value = it.y.toFloat()
         }
+
+        r.baseVal.value = this@SvgCircle.r.toFloat()
+
+        setAttribute("fill", fill)
+        setAttribute("stroke", stroke)
+
+        strokeWidth?.let {
+            setAttribute("stroke-width", it.toString())
+        }
+    }
 }
