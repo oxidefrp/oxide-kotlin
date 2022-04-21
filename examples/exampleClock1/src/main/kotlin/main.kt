@@ -5,14 +5,16 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 
+val timeZone: TimeZone = TimeZone.currentSystemDefault()
+
+val now: Signal<Instant> = Signal.source {
+    Clock.System.now()
+}
+
 fun main() {
-    val timeZone: TimeZone = TimeZone.currentSystemDefault()
-
-    val now: Signal<Instant> = Signal.source {
-        Clock.System.now()
-    }
-
-    val widget = Column(
+    val widget = Row(
+        gap = 4.0,
+        padding = 4.0,
         children = listOf(
             buildClock(
                 timeZone = timeZone,
@@ -21,5 +23,5 @@ fun main() {
         ),
     )
 
-    document.body!!.appendChild(widget.buildElement())
+    document.body!!.appendChild(widget.buildElementExternally())
 }
