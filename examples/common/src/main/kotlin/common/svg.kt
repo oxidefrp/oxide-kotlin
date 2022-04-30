@@ -1,7 +1,7 @@
 package common
 
 import HtmlFinalWidget
-import HtmlWidget
+import HtmlWidgetInstance
 import animationFrameStream
 import io.github.oxidefrp.oxide.core.Cell
 import io.github.oxidefrp.oxide.core.EventStream
@@ -71,8 +71,8 @@ data class SvgSvg(
     val width: Double,
     val height: Double,
     val children: List<SvgWidget>,
-) : HtmlFinalWidget() {
-    override fun buildElementExternally(): SVGElement =
+) : HtmlFinalWidget<HtmlWidgetInstance>() {
+    override fun buildInstanceExternally(): SVGElement =
         createSvgElement<SVGSVGElement>("svg").apply {
             setAttribute("xmlns", "http://www.w3.org/2000/svg")
             setAttribute("viewBox", "0 0 ${this@SvgSvg.width} ${this@SvgSvg.height}")
