@@ -6,6 +6,7 @@ import io.github.oxidefrp.oxide.core.impl.Some
 import io.github.oxidefrp.oxide.core.impl.getOrElse
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.expect
 
 class SignalVerifier<A> {
     private var preparedValue: Option<A> = None()
@@ -105,6 +106,31 @@ class SignalOperatorsUnitTests {
         sampleCount = 0
 
         verifier.verifyReceivedEvent(expected = "B")
+    }
+
+    @Test
+    fun testSampleInstanceMethod() {
+        val signalVerifier = SignalVerifier<Int>()
+
+        val signal = signalVerifier.signal
+
+        signalVerifier.prepareValue(2)
+
+        assertEquals(
+            expected = 2,
+            actual = signal.sample().pullExternally(),
+        )
+
+        signalVerifier.verifyValueWasSampled()
+
+        signalVerifier.prepareValue(3)
+
+        assertEquals(
+            expected = 3,
+            actual = signal.sample().pullExternally(),
+        )
+
+        signalVerifier.verifyValueWasSampled()
     }
 
     @Test

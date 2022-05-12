@@ -5,3 +5,4 @@ internal abstract class Vertex {
 
     abstract fun process(transaction: Transaction)
 }
+

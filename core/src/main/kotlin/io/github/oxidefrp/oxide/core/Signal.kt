@@ -2,6 +2,8 @@ package io.github.oxidefrp.oxide.core
 
 import io.github.oxidefrp.oxide.core.impl.Transaction
 import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
+import io.github.oxidefrp.oxide.core.impl.moment.MomentVertex
+import io.github.oxidefrp.oxide.core.impl.moment.SampleMomentVertex
 import io.github.oxidefrp.oxide.core.impl.signal.ApplySignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.ConstantSignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.MapSignalVertex
@@ -128,6 +130,12 @@ abstract class Signal<out A> {
         this.sampleOf { initialValue ->
             ticks.probe(this).hold(initialValue)
         }
+
+    fun sample(): Moment<A> = object : Moment<A>() {
+        override val vertex: MomentVertex<A> = SampleMomentVertex(
+            signal = this@Signal.vertex,
+        )
+    }
 
     fun sampleExternally(): A = Transaction.wrap {
         vertex.pullCurrentValue(transaction = it)
