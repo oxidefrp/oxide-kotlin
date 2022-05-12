@@ -7,6 +7,7 @@ import io.github.oxidefrp.oxide.core.impl.moment.SampleMomentVertex
 import io.github.oxidefrp.oxide.core.impl.signal.ApplySignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.ConstantSignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.MapSignalVertex
+import io.github.oxidefrp.oxide.core.impl.signal.MomentSourceSignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.SamplePerformSignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.SampleSignalVertex
 import io.github.oxidefrp.oxide.core.impl.signal.SignalVertex
@@ -37,6 +38,12 @@ abstract class Signal<out A> {
             object : Signal<A>() {
                 override val vertex: SignalVertex<A> =
                     SourceSignalVertex(sampleExternal = sampleExternal)
+            }
+
+        fun <A> source(moment: Moment<A>): Signal<A> =
+            object : Signal<A>() {
+                override val vertex: SignalVertex<A> =
+                    MomentSourceSignalVertex(moment = moment)
             }
 
         fun <A, B> apply(
@@ -126,9 +133,9 @@ abstract class Signal<out A> {
     fun <B> sampleOf(transform: (A) -> Signal<B>): Signal<B> =
         sample(map(transform))
 
-    fun discretize(ticks: EventStream<Unit>): Signal<Cell<A>> =
-        this.sampleOf { initialValue ->
-            ticks.probe(this).holdS(initialValue)
+    fun discretize(ticks: EventStream<Unit>): Moment<Cell<A>> =
+        this.sample().pullOf { initialValue ->
+            ticks.probe(this).hold(initialValue)
         }
 
     fun sample(): Moment<A> = object : Moment<A>() {

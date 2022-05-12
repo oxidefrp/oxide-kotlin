@@ -5,8 +5,10 @@ import HtmlWidgetInstance
 import animationFrameStream
 import io.github.oxidefrp.oxide.core.Cell
 import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.oxide.core.Io
 import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.browser.document
+import org.w3c.dom.Element
 import org.w3c.dom.svg.SVGCircleElement
 import org.w3c.dom.svg.SVGElement
 import org.w3c.dom.svg.SVGGElement
@@ -72,24 +74,27 @@ data class SvgSvg(
     val height: Double,
     val children: List<SvgWidget>,
 ) : HtmlFinalWidget<HtmlWidgetInstance>() {
-    override fun buildInstanceExternally(): SVGElement =
-        createSvgElement<SVGSVGElement>("svg").apply {
-            setAttribute("xmlns", "http://www.w3.org/2000/svg")
-            setAttribute("viewBox", "0 0 ${this@SvgSvg.width} ${this@SvgSvg.height}")
-            setAttribute("width", this@SvgSvg.width.toString())
-            setAttribute("height", this@SvgSvg.height.toString())
+    override fun buildInstanceExternally() = object : Io<HtmlWidgetInstance>() {
+        override fun performExternally() = object : HtmlWidgetInstance() {
+            override val element: Element = createSvgElement<SVGSVGElement>("svg").apply {
+                setAttribute("xmlns", "http://www.w3.org/2000/svg")
+                setAttribute("viewBox", "0 0 ${this@SvgSvg.width} ${this@SvgSvg.height}")
+                setAttribute("width", this@SvgSvg.width.toString())
+                setAttribute("height", this@SvgSvg.height.toString())
 
-            val ticks = animationFrameStream()
+                val ticks = animationFrameStream()
 
-            this@SvgSvg.children.forEach {
-                appendChild(
-                    it.buildElement(
-                        svg = this,
-                        ticks = ticks,
-                    ),
-                )
+                this@SvgSvg.children.forEach {
+                    appendChild(
+                        it.buildElement(
+                            svg = this,
+                            ticks = ticks,
+                        ),
+                    )
+                }
             }
         }
+    }
 }
 
 data class SvgGroup(
@@ -122,7 +127,7 @@ private fun linkSvgTransform(
     element: SVGGraphicsElement,
     transform: Signal<Transform>,
 ) {
-    val transformDiscretized = transform.discretize(ticks = ticks).sampleExternally()
+    val transformDiscretized = transform.discretize(ticks = ticks).pullExternally()
 
     val initialTransform = transformDiscretized.value.sampleExternally()
 

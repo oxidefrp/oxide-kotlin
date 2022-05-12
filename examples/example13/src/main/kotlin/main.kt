@@ -1,6 +1,6 @@
 import io.github.oxidefrp.oxide.core.Cell
 import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.holdS
+import io.github.oxidefrp.oxide.core.hold
 import kotlinx.browser.document
 
 private const val innerCell1IntervalMs = 2347
@@ -26,18 +26,18 @@ fun main() {
     val innerCell1 = InputCell(
         name = "c1",
         cell = consecutiveIntsStream(intervalMs = innerCell1IntervalMs)
-            .holdS(0).sampleExternally(),
+            .hold(0).pullExternally(),
     )
 
     val innerCell2 = InputCell(
         name = "c2",
         cell = consecutiveIntsStream(intervalMs = innerCell2IntervalMs)
             .map { -it }
-            .holdS(0).sampleExternally(),
+            .hold(0).pullExternally(),
     )
 
     val outerCell = consecutiveIntsStream(intervalMs = outerCellIntervalMs)
-        .holdS(0).sampleExternally().map {
+        .hold(0).pullExternally().map {
             when (it % 2) {
                 0 -> innerCell1
                 else -> innerCell2

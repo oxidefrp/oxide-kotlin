@@ -1,6 +1,6 @@
 import examples.exampleClock1.buildClock
 import io.github.oxidefrp.oxide.core.Signal
-import io.github.oxidefrp.oxide.core.holdS
+import io.github.oxidefrp.oxide.core.hold
 import kotlinx.browser.document
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -18,7 +18,7 @@ class MainWidget : HtmlShadowWidget<HtmlWidgetInstance>() {
             widget = Button(text = "Foo"),
         ).buildOf { button ->
             HtmlBuildContext.sample(
-                signal = button.onPressed.map { 1 }.holdS(-1),
+                signal = button.onPressed.map { 1 }.hold(-1),
             ).map { intCell ->
                 Column(
                     children = listOf(

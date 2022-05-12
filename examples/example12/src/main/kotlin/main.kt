@@ -1,5 +1,5 @@
 import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.holdS
+import io.github.oxidefrp.oxide.core.hold
 import kotlinx.browser.document
 
 private const val cell1IntervalMs = 7103
@@ -17,10 +17,10 @@ fun consecutiveIntsStream(intervalMs: Int): EventStream<Int> {
 
 fun main() {
     val inputCell1 = consecutiveIntsStream(intervalMs = cell1IntervalMs)
-        .holdS(0).sampleExternally()
+        .hold(0).pullExternally()
 
     val inputCell2 = consecutiveIntsStream(intervalMs = cell2IntervalMs)
-        .holdS(100).sampleExternally()
+        .hold(100).pullExternally()
 
     val output = transform(
         inputCell1 = inputCell1,
