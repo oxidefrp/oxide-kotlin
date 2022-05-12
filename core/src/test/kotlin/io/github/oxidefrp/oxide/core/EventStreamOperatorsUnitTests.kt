@@ -352,7 +352,7 @@ class EventStreamOperatorsUnitTests {
             actual = steps.vertex.referenceCount,
         )
 
-        val result: Cell<Int> = steps.hold(1).sampleExternally()
+        val result: Cell<Int> = steps.holdS(1).sampleExternally()
 
         assertEquals(
             expected = 1,
@@ -490,7 +490,7 @@ class EventStreamOperatorsUnitTests {
         val sourceStream = EventEmitter<Int>()
 
         val source = sourceStream.map { EventStream.never<String>() }
-            .hold(initialValue = sourceStream.map { "$it" }).sampleExternally()
+            .holdS(initialValue = sourceStream.map { "$it" }).sampleExternally()
 
         val result = Cell.divert(source)
 
@@ -508,7 +508,7 @@ class EventStreamOperatorsUnitTests {
         val sourceStream = EventEmitter<Int>()
 
         val source = sourceStream.map { sourceStream.map { "$it" } }
-            .hold(initialValue = EventStream.never()).sampleExternally()
+            .holdS(initialValue = EventStream.never()).sampleExternally()
 
         val result = Cell.divert(source)
 
@@ -526,7 +526,7 @@ class EventStreamOperatorsUnitTests {
         val sourceStream = EventEmitter<Char>()
 
         val source = sourceStream.map { sourceStream.map { it.toString() } }
-            .hold(initialValue = sourceStream.map { it.uppercase() }).sampleExternally()
+            .holdS(initialValue = sourceStream.map { it.uppercase() }).sampleExternally()
 
         val result = Cell.divert(source)
 

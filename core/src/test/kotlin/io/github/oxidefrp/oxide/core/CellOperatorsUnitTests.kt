@@ -228,13 +228,13 @@ class CellOperatorsUnitTests {
         val sourceStream = EventEmitter<Int>()
 
         val cell1 = sourceStream
-            .hold(initialValue = 1).sampleExternally()
+            .holdS(initialValue = 1).sampleExternally()
 
         val cell2 = sourceStream.map { -it }
-            .hold(initialValue = -1).sampleExternally()
+            .holdS(initialValue = -1).sampleExternally()
 
         val source = sourceStream.map { cell2 }
-            .hold(cell1).sampleExternally()
+            .holdS(cell1).sampleExternally()
 
         val result = Cell.switch(source)
 
@@ -415,12 +415,12 @@ class CellOperatorsUnitTests {
                 if (it % 2 == 0) fun(i: Int): String = "even:$i"
                 else fun(i: Int): String = "odd:$i"
             }
-            .hold(initialValue = fun(i: Int): String = ":$i")
+            .holdS(initialValue = fun(i: Int): String = ":$i")
             .sampleExternally()
 
         val argumentCell = eventEmitter
             .map { -it }
-            .hold(initialValue = 0)
+            .holdS(initialValue = 0)
             .sampleExternally()
 
         val result = Cell.apply(

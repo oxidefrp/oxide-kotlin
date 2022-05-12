@@ -128,7 +128,7 @@ abstract class Signal<out A> {
 
     fun discretize(ticks: EventStream<Unit>): Signal<Cell<A>> =
         this.sampleOf { initialValue ->
-            ticks.probe(this).hold(initialValue)
+            ticks.probe(this).holdS(initialValue)
         }
 
     fun sample(): Moment<A> = object : Moment<A>() {

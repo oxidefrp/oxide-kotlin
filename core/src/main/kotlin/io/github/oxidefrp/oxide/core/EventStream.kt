@@ -95,11 +95,11 @@ fun <A> EventStream<A>.mergeWith(
     )
 }
 
-fun <A> EventStream<A>.hold(initialValue: A): Signal<Cell<A>> =
+fun <A> EventStream<A>.holdS(initialValue: A): Signal<Cell<A>> =
     object : Signal<Cell<A>>() {
         override val vertex: SignalVertex<Cell<A>> =
             HoldSignalVertex(
-                steps = this@hold.vertex,
+                steps = this@holdS.vertex,
                 initialValue = initialValue,
             )
     }
