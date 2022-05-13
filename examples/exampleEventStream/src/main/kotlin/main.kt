@@ -1,9 +1,9 @@
 import examples.exampleEventStream.transform
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.oxide.core.Moment
 import kotlinx.browser.document
 
 fun main() {
-    val widget = Signal.map1(
+    val widget = Moment.map1(
         transform(),
     ) { output ->
         Row(
@@ -15,7 +15,10 @@ fun main() {
                 ),
             ),
         )
-    }.sampleExternally()
+    }.pullExternally()
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+        parent = document.body!!,
+        widget = widget,
+    )
 }

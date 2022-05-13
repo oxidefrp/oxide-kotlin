@@ -17,7 +17,7 @@ class MainWidget : HtmlShadowWidget<HtmlWidgetInstance>() {
         HtmlBuildContext.construct(
             widget = Button(text = "Foo"),
         ).buildOf { button ->
-            HtmlBuildContext.sample(
+            HtmlBuildContext.pull(
                 signal = button.onPressed.map { 1 }.hold(-1),
             ).map { intCell ->
                 Column(

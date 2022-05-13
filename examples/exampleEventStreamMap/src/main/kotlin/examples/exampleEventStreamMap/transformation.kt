@@ -2,6 +2,7 @@ package examples.exampleEventStreamMap
 
 import common.buildConsecutiveIntStream
 import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.oxide.core.Moment
 import io.github.oxidefrp.oxide.core.Signal
 
 data class Output(
@@ -9,7 +10,7 @@ data class Output(
     val mappedStream: EventStream<Int>,
 )
 
-fun transform(): Signal<Output> = buildConsecutiveIntStream(1.0).map { inputStream ->
+fun transform(): Moment<Output> = buildConsecutiveIntStream(1.0).map { inputStream ->
     val mappedStream = inputStream.map { it * 2 }
 
     Output(

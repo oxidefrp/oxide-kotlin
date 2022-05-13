@@ -1,5 +1,5 @@
 import examples.exampleSignalMap2.transform
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.oxide.core.Moment
 import kotlinx.browser.document
 
 fun main() {
@@ -14,7 +14,7 @@ fun main() {
     val aMin = 0.0
     val aMax = 6.0
 
-    val widget = Signal.map3(
+    val widget = Moment.map3(
         buildSignalMeter(
             signal = output.inputSignal1,
             aMin = aMin,
@@ -43,7 +43,10 @@ fun main() {
                 mappedSignalMeter,
             ),
         )
-    }.sampleExternally()
+    }.pullExternally()
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+        parent = document.body!!,
+        widget = widget,
+    )
 }

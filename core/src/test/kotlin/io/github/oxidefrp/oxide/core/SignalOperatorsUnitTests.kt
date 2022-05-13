@@ -6,7 +6,6 @@ import io.github.oxidefrp.oxide.core.impl.Some
 import io.github.oxidefrp.oxide.core.impl.getOrElse
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.expect
 
 class SignalVerifier<A> {
     private var preparedValue: Option<A> = None()

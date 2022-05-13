@@ -61,5 +61,8 @@ fun main() {
         padding = 4.0,
     )
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+    parent = document.body!!,
+    widget = widget,
+)
 }

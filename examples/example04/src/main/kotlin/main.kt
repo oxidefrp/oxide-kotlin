@@ -1,6 +1,4 @@
-import io.github.oxidefrp.oxide.core.EventStream
 import io.github.oxidefrp.oxide.core.Moment
-import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.browser.document
 import kotlin.math.PI
 import kotlin.math.cos
@@ -83,5 +81,8 @@ fun main() {
         )
     }.pullExternally()
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+        parent = document.body!!,
+        widget = widget,
+    )
 }

@@ -1,4 +1,5 @@
 import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.oxide.core.Moment
 import io.github.oxidefrp.oxide.core.Signal
 import io.github.oxidefrp.oxide.core.hold
 import kotlinx.browser.document
@@ -31,7 +32,7 @@ fun main() {
     val aMin = -1.0
     val aMax = 9.0
 
-    val widget = Signal.map1(
+    val widget = Moment.map1(
         buildSignalMeter(
             signal = outputSignal.map { it.toDouble() },
             aMin = aMin,
@@ -47,7 +48,10 @@ fun main() {
             ),
             padding = 4.0,
         )
-    }.sampleExternally()
+    }.pullExternally()
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+        parent = document.body!!,
+        widget = widget,
+    )
 }

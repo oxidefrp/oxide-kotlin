@@ -1,3 +1,4 @@
+import io.github.oxidefrp.oxide.core.Moment
 import io.github.oxidefrp.oxide.core.Signal
 import kotlinx.browser.document
 import kotlin.math.PI
@@ -23,7 +24,7 @@ fun main() {
     val aMin = -3.125
     val aMax = 3.125
 
-    val widget = Signal.map2(
+    val widget = Moment.map2(
         buildSignalMeter(
             signal = inputSignal,
             aMin = aMin,
@@ -45,7 +46,10 @@ fun main() {
             ),
             padding = 4.0,
         )
-    }.sampleExternally()
+    }.pullExternally()
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+        parent = document.body!!,
+        widget = widget,
+    )
 }

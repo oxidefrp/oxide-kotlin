@@ -2,9 +2,10 @@ package common
 
 import intervalStream
 import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.oxide.core.Moment
 import io.github.oxidefrp.oxide.core.Signal
 
-fun buildConsecutiveIntStream(intervalS: Double): Signal<EventStream<Int>> {
+fun buildConsecutiveIntStream(intervalS: Double): Moment<EventStream<Int>> {
     var nextNumber = 0
 
     val inputStream = intervalStream(timeout = (intervalS * 1000.0).toInt()).map {
@@ -13,5 +14,5 @@ fun buildConsecutiveIntStream(intervalS: Double): Signal<EventStream<Int>> {
         ++nextNumber
     }
 
-    return Signal.constant(inputStream)
+    return Moment.pure(inputStream)
 }

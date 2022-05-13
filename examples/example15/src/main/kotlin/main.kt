@@ -20,7 +20,7 @@ fun main() {
         inputStream = inputStream,
     )
 
-    val outputCell = output.outputCell.sampleExternally()
+    val outputCell = output.outputCell.pullExternally()
 
     val widget = Row(
         gap = 16.0,
@@ -31,5 +31,8 @@ fun main() {
         padding = 4.0,
     )
 
-    document.body!!.appendChild(widget.buildElement())
+    HtmlGenericWidget.embed(
+        parent = document.body!!,
+        widget = widget,
+    )
 }

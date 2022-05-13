@@ -1,6 +1,7 @@
 import io.github.oxidefrp.oxide.core.Cell
 import io.github.oxidefrp.oxide.core.EventStream
 import io.github.oxidefrp.oxide.core.Io
+import io.github.oxidefrp.oxide.core.Moment
 import io.github.oxidefrp.oxide.core.Signal
 import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
 import io.github.oxidefrp.oxide.core.mapNested
@@ -14,6 +15,14 @@ import org.w3c.dom.css.CSSStyleDeclaration
 import org.w3c.dom.events.Event
 
 abstract class HtmlGenericWidget<W : HtmlWidgetInstance> {
+    companion object {
+        fun embed(parent: Element, widget: HtmlGenericWidget<*>) {
+            parent.appendChild(
+                widget.buildFinalElementExternally().sampleExternally().performExternally(),
+            )
+        }
+    }
+
     abstract fun buildFinalWidgetExternally(): Signal<Io<HtmlFinalWidget<W>>>
 
 //    fun <W2 : HtmlWidgetInstance> flatMap(transform: (W) -> HtmlGenericWidget<W>) {
@@ -50,6 +59,9 @@ abstract class HtmlBuildContext<A> {
                 override fun buildDirectly(): Signal<Io<A>> =
                     signal.map(Io.Companion::pure)
             }
+
+        fun <A> pull(signal: Moment<A>): HtmlBuildContext<A> =
+            TODO()
     }
 
     abstract fun buildDirectly(): Signal<Io<A>>
