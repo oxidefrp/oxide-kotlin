@@ -7,8 +7,8 @@ import common.SvgLine
 import common.SvgSvg
 import common.SvgTranslate
 import common.Transform
-import io.github.oxidefrp.oxide.core.Cell
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.Signal
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime

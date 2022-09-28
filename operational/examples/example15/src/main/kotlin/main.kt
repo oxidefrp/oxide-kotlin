@@ -1,4 +1,4 @@
-import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.core.EventStream
 import kotlinx.browser.document
 
 private const val inputStreamIntervalMs = 2347

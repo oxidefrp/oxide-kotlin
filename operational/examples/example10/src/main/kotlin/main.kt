@@ -1,9 +1,9 @@
 import common.buildConsecutiveIntStream
-import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.Moment
-import io.github.oxidefrp.oxide.core.Signal
-import io.github.oxidefrp.oxide.core.hold
-import io.github.oxidefrp.oxide.core.pullOf
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.hold
+import io.github.oxidefrp.core.pullOf
 import kotlinx.browser.document
 
 fun main() {

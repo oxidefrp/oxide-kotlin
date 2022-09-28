@@ -3,10 +3,10 @@ package common
 import HtmlFinalWidget
 import HtmlWidgetInstance
 import animationFrameStream
-import io.github.oxidefrp.oxide.core.Cell
-import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.Io
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Io
+import io.github.oxidefrp.core.Signal
 import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.svg.SVGCircleElement

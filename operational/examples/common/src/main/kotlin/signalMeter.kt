@@ -4,8 +4,8 @@ import common.SvgGroup
 import common.SvgLine
 import common.SvgSvg
 import common.SvgTranslate
-import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Signal
 
 private const val meterWidth = 40.0
 private const val meterHeight = 200.0

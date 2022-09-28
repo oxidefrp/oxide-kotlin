@@ -1,8 +1,8 @@
 package examples.exampleEventStream
 
 import common.buildConsecutiveIntStream
-import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.Moment
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
 
 data class Output(
     val eventStream: EventStream<Int>,
