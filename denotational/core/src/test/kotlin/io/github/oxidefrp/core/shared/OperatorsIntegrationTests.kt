@@ -24,7 +24,7 @@ object OperatorsIntegrationTests {
      * The timeline consists of three crucial moments: t = 1, t = 2
      * (the "middle" moment), and t = 3.
      *
-     * The system contains of...
+     * The system contains...
      * - two source streams of numbers (events at t = 1, t = 2, and t = 3)
      * - a diversion cell which first exposes the first stream, but at t = 2 it
      *   diverts to the second one.
@@ -32,11 +32,10 @@ object OperatorsIntegrationTests {
      * The catch is that both the source stream number middle events and the
      * diversion event itself can be _filtered-out_.
      *
-     * This system can be tricky to handle especially at the executable
+     * This system can be tricky to handle especially at the denotational
      * semantics level.
      */
     object FilterHoldDiverts {
-
         private sealed interface SourceStreamSpec {
             val description: String
 
@@ -170,42 +169,6 @@ object OperatorsIntegrationTests {
             ),
         )
 
-        private fun testCase(
-            sourceCase: SourceCaseSpec,
-            diversionStream: DiversionStreamSpec,
-            divertOperator: DivertOperator,
-            expectedStream: EventStreamSpec<Double>,
-        ) = testSystem {
-            fun buildDiversionCell(): Moment<Cell<EventStream<Double>>> {
-                val sourceStream1 = buildInputStream(sourceCase.firstStream.spec).filterNotNull()
-                val sourceStream2 = buildInputStream(sourceCase.secondStream.spec).filterNotNull()
-
-                return buildInputStream(
-                    diversionStream.buildSpec(secondStream = sourceStream2),
-                ).filterNotNull().hold(sourceStream1)
-            }
-
-            val divertedStream = buildDiversionCell().map(divertOperator::divert)
-
-            val namePrefix = divertOperator.divertedStreamName
-
-            val nameSuffix = listOf(
-                "first source stream: ${sourceCase.firstStream.description}",
-                "second source stream: ${sourceCase.secondStream.description}",
-                "diversion stream: ${diversionStream.description}",
-            ).joinToString(separator = ", ")
-
-            TestCheck(
-                subject = divertedStream,
-                name = "$namePrefix ($nameSuffix)",
-                spec = MomentSpec(
-                    expectedValues = mapOf(
-                        Tick(t = 0) to expectedStream,
-                    ),
-                ),
-            )
-        }
-
         object Divert {
             @Test
             fun testSourceCase1WithFilteredOutDiversion() = testCase(
@@ -335,6 +298,42 @@ object OperatorsIntegrationTests {
                 diversionStream = DiversionStreamWithDiversion,
                 divertOperator = DivertOperator.DivertEarly,
                 expectedStream = expectedStreamWithNewMiddleWithDiversion,
+            )
+        }
+
+        private fun testCase(
+            sourceCase: SourceCaseSpec,
+            diversionStream: DiversionStreamSpec,
+            divertOperator: DivertOperator,
+            expectedStream: EventStreamSpec<Double>,
+        ) = testSystem {
+            fun buildDiversionCell(): Moment<Cell<EventStream<Double>>> {
+                val sourceStream1 = buildInputStream(sourceCase.firstStream.spec).filterNotNull()
+                val sourceStream2 = buildInputStream(sourceCase.secondStream.spec).filterNotNull()
+
+                return buildInputStream(
+                    diversionStream.buildSpec(secondStream = sourceStream2),
+                ).filterNotNull().hold(sourceStream1)
+            }
+
+            val divertedStream = buildDiversionCell().map(divertOperator::divert)
+
+            val namePrefix = divertOperator.divertedStreamName
+
+            val nameSuffix = listOf(
+                "first source stream: ${sourceCase.firstStream.description}",
+                "second source stream: ${sourceCase.secondStream.description}",
+                "diversion stream: ${diversionStream.description}",
+            ).joinToString(separator = ", ")
+
+            TestCheck(
+                subject = divertedStream,
+                name = "$namePrefix ($nameSuffix)",
+                spec = MomentSpec(
+                    expectedValues = mapOf(
+                        Tick(t = 0) to expectedStream,
+                    ),
+                ),
             )
         }
     }
