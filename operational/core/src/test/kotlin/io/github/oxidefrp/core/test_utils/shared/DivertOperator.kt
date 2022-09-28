@@ -1,4 +1,4 @@
-package io.github.oxidefrp.core.test_utils
+package io.github.oxidefrp.core.test_utils.shared
 
 import io.github.oxidefrp.core.Cell
 import io.github.oxidefrp.core.EventStream
