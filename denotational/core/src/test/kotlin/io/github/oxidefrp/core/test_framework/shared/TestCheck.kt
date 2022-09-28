@@ -15,7 +15,7 @@ internal data class TestCheck<E>(
      * The spec to verify the subject against
      */
     val spec: SubjectSpec<E>,
-): TestCheckGroup {
+) : TestCheckGroup {
     override val checks: List<TestCheck<*>>
         get() = listOf(this)
 
