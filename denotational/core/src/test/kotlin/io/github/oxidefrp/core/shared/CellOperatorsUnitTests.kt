@@ -1,5 +1,7 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.shared
 
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.ValueChange
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.FiniteInputCellSpec
@@ -11,7 +13,7 @@ import io.github.oxidefrp.core.test_framework.shared.TestCheck
 import io.github.oxidefrp.core.test_framework.shared.TestSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
 import io.github.oxidefrp.core.test_framework.testSystem
-import io.github.oxidefrp.core.test_utils.DivertOperator
+import io.github.oxidefrp.core.test_utils.shared.DivertOperator
 import java.lang.IllegalArgumentException
 import kotlin.test.Test
 
