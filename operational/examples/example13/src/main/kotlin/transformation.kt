@@ -1,4 +1,4 @@
-import io.github.oxidefrp.oxide.core.Cell
+import io.github.oxidefrp.core.Cell
 
 data class Output(
     val outputCell: Cell<Int>,

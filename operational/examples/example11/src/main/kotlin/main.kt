@@ -1,6 +1,6 @@
 import common.buildConsecutiveIntStream
-import io.github.oxidefrp.oxide.core.hold
-import io.github.oxidefrp.oxide.core.pullOf
+import io.github.oxidefrp.core.hold
+import io.github.oxidefrp.core.pullOf
 import kotlinx.browser.document
 
 fun main() {

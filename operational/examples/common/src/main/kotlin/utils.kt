@@ -1,6 +1,6 @@
-import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.Signal
-import io.github.oxidefrp.oxide.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.impl.event_stream.Subscription
 import kotlinx.browser.window
 
 fun intervalStream(timeout: Int): EventStream<Unit> =

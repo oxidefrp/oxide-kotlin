@@ -1,5 +1,5 @@
 import examples.exampleSignalMap.transform
-import io.github.oxidefrp.oxide.core.Moment
+import io.github.oxidefrp.core.Moment
 import kotlinx.browser.document
 
 fun main() {

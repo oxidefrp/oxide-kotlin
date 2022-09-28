@@ -1,5 +1,5 @@
-import io.github.oxidefrp.oxide.core.Cell
-import io.github.oxidefrp.oxide.core.ValueChange
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.ValueChange
 
 fun buildCellMeter(
     cell: Cell<Any>,

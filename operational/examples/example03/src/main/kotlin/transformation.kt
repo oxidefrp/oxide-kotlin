@@ -1,4 +1,4 @@
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.core.Signal
 
 data class Output(
     val signal: Signal<Double>,

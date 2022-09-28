@@ -1,6 +1,6 @@
 import common.Point
-import io.github.oxidefrp.oxide.core.Moment
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.Signal
 
 data class Output(
     val point: Signal<Point>,

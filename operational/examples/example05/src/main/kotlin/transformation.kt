@@ -1,4 +1,4 @@
-import io.github.oxidefrp.oxide.core.EventStream
+import io.github.oxidefrp.core.EventStream
 
 data class Output(
     val outputStream: EventStream<String>,

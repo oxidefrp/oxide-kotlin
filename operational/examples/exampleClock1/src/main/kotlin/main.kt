@@ -1,6 +1,6 @@
 import examples.exampleClock1.buildClock
-import io.github.oxidefrp.oxide.core.Signal
-import io.github.oxidefrp.oxide.core.hold
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.hold
 import kotlinx.browser.document
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

@@ -1,6 +1,6 @@
 import examples.exampleSignalSample.transform
-import io.github.oxidefrp.oxide.core.Moment
-import io.github.oxidefrp.oxide.core.Signal
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.Signal
 import kotlinx.browser.document
 
 fun main() {

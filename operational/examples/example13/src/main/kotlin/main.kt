@@ -1,6 +1,6 @@
-import io.github.oxidefrp.oxide.core.Cell
-import io.github.oxidefrp.oxide.core.EventStream
-import io.github.oxidefrp.oxide.core.hold
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.hold
 import kotlinx.browser.document
 
 private const val innerCell1IntervalMs = 2347
