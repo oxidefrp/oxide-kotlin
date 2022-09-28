@@ -3,7 +3,6 @@ package io.github.oxidefrp.core.test_framework.shared
 import io.github.oxidefrp.core.Cell
 import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.Moment
-import io.github.oxidefrp.core.cutOff
 import io.github.oxidefrp.core.test_framework.Validator
 import io.github.oxidefrp.core.test_framework.validators.CellValidator
 import io.github.oxidefrp.core.test_framework.validators.EventStreamValidator

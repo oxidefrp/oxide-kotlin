@@ -14,7 +14,6 @@ import io.github.oxidefrp.core.test_framework.shared.TestSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
 import io.github.oxidefrp.core.test_framework.testSystem
 import io.github.oxidefrp.core.test_utils.shared.DivertOperator
-import java.lang.IllegalArgumentException
 import kotlin.test.Test
 
 class CellOperatorsUnitTests {
