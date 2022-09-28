@@ -1,7 +1,7 @@
 package examples.exampleSignalSample
 
-import io.github.oxidefrp.semantics.Signal
-import io.github.oxidefrp.semantics.sampleOf
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.sampleOf
 import kotlin.math.PI
 import kotlin.math.sin
 

@@ -1,8 +1,8 @@
 package common
 
-import io.github.oxidefrp.semantics.ClosedTimeEndpoint
-import io.github.oxidefrp.semantics.EventStream
-import io.github.oxidefrp.semantics.Time
+import io.github.oxidefrp.core.ClosedTimeEndpoint
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Time
 
 class EventStreamTimeFunction(
     private val eventStream: EventStream<Double>,

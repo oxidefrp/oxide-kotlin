@@ -1,10 +1,10 @@
 package common
 
-import io.github.oxidefrp.semantics.EventStream
-import io.github.oxidefrp.semantics.Incident
-import io.github.oxidefrp.semantics.PureSequence
-import io.github.oxidefrp.semantics.Signal
-import io.github.oxidefrp.semantics.Time
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Incident
+import io.github.oxidefrp.core.PureSequence
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.Time
 
 val now: Signal<Double> = object : Signal<Double>() {
     override fun at(t: Time): Double = t.t

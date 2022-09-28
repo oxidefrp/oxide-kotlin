@@ -1,6 +1,6 @@
 package examples.exampleSignal
 
-import io.github.oxidefrp.semantics.Signal
+import io.github.oxidefrp.core.Signal
 import kotlin.math.abs
 import kotlin.math.sin
 

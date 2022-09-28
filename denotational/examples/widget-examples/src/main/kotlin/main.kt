@@ -1,10 +1,10 @@
-import io.github.oxidefrp.semantics.Cell
-import io.github.oxidefrp.semantics.Incident
-import io.github.oxidefrp.semantics.EventStream
-import io.github.oxidefrp.semantics.Moment
-import io.github.oxidefrp.semantics.Time
-import io.github.oxidefrp.semantics.hold
-import io.github.oxidefrp.semantics.pullOf
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.Incident
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.Time
+import io.github.oxidefrp.core.hold
+import io.github.oxidefrp.core.pullOf
 
 fun main() {
     val prompts = EventStream.ofOccurrences(

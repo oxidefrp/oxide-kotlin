@@ -1,7 +1,7 @@
 package common
 
-import io.github.oxidefrp.semantics.Signal
-import io.github.oxidefrp.semantics.Time
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.Time
 import kotlin.math.floor
 
 private const val polylinePointCount = 1000

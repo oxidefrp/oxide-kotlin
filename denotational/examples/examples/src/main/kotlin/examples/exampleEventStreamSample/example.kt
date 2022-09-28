@@ -8,8 +8,8 @@ import common.PlotProps
 import common.buildEventStreamPlotD
 import common.buildSignalPlot
 import common.now
-import io.github.oxidefrp.semantics.Signal
-import io.github.oxidefrp.semantics.Time
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.Time
 
 private val canvasProps = CanvasProps(
     width = 400.0,
