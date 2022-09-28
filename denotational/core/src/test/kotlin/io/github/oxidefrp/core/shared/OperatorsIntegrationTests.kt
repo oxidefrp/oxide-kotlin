@@ -1,5 +1,10 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.shared
 
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.filterNotNull
+import io.github.oxidefrp.core.hold
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
 import io.github.oxidefrp.core.test_framework.shared.FiniteInputStreamSpec
@@ -8,7 +13,7 @@ import io.github.oxidefrp.core.test_framework.shared.MomentSpec
 import io.github.oxidefrp.core.test_framework.shared.TestCheck
 import io.github.oxidefrp.core.test_framework.shared.Tick
 import io.github.oxidefrp.core.test_framework.testSystem
-import io.github.oxidefrp.core.test_utils.DivertOperator
+import io.github.oxidefrp.core.test_utils.shared.DivertOperator
 import kotlin.test.Test
 
 object OperatorsIntegrationTests {

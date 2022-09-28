@@ -1,5 +1,10 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.shared
 
+import io.github.oxidefrp.core.EventOccurrence
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.accum
+import io.github.oxidefrp.core.hold
+import io.github.oxidefrp.core.mergeWith
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
