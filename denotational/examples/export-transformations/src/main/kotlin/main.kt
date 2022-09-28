@@ -34,7 +34,7 @@ fun main() {
         val sourceTransformationContent = sourceTransformationPath.readBytes().toString(Charsets.UTF_8)
 
         val targetTransformationContent = sourceTransformationContent.replace(
-            oldValue = "io.github.oxidefrp.semantics",
+            oldValue = "io.github.oxidefrp.core",
             newValue = "io.github.oxidefrp.oxide.core",
         )
 

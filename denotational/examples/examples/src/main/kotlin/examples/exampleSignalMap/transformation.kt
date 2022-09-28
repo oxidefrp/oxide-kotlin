@@ -1,6 +1,6 @@
 package examples.exampleSignalMap
 
-import io.github.oxidefrp.semantics.Signal
+import io.github.oxidefrp.core.Signal
 import kotlin.math.sin
 
 data class Output(

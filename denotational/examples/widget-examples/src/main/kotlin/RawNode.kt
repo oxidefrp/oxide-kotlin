@@ -1,4 +1,4 @@
-import io.github.oxidefrp.semantics.State
+import io.github.oxidefrp.core.State
 
 sealed interface RawNode {
     fun dump(): Io<List<String>>

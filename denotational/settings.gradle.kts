@@ -1,7 +1,7 @@
 rootProject.name = "oxide-denotational"
 
 include(
-    "implementation",
+    "core",
     "examples:examples",
     "examples:export-plots",
     "examples:export-transformations",

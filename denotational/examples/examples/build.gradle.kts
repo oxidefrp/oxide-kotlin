@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":implementation"))
+    implementation(project(":core"))
 }
 
 tasks.withType<KotlinCompile>() {

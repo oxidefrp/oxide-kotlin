@@ -1,6 +1,6 @@
-import io.github.oxidefrp.semantics.State
-import io.github.oxidefrp.semantics.StateScheduler
-import io.github.oxidefrp.semantics.StateStructure
+import io.github.oxidefrp.core.State
+import io.github.oxidefrp.core.StateScheduler
+import io.github.oxidefrp.core.StateStructure
 
 data class RealWorld(
     val nodes: Map<Int, RawNode?>,

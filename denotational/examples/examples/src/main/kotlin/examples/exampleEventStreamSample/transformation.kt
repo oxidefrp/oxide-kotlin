@@ -1,8 +1,8 @@
 package examples.exampleEventStreamSample
 
 import common.buildConsecutiveIntStream
-import io.github.oxidefrp.semantics.EventStream
-import io.github.oxidefrp.semantics.Signal
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Signal
 import kotlin.math.cos
 import kotlin.math.sin
 

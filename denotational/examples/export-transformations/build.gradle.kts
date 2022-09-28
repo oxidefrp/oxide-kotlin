@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":implementation"))
+    implementation(project(":core"))
     implementation(project(":examples:examples"))
 }
 

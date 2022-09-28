@@ -6,8 +6,8 @@ import common.FunctionWindow
 import common.Plot
 import common.PlotProps
 import common.buildEventStreamPlot
-import io.github.oxidefrp.semantics.Signal
-import io.github.oxidefrp.semantics.Time
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.Time
 
 private val canvasProps = CanvasProps(
     width = 400.0,

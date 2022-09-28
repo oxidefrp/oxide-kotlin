@@ -1,4 +1,4 @@
-import io.github.oxidefrp.semantics.Cell
+import io.github.oxidefrp.core.Cell
 
 sealed interface Node {
     companion object {

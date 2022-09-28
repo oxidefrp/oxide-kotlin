@@ -1,8 +1,8 @@
 package examples.exampleEventStreamMap
 
 import common.buildConsecutiveIntStream
-import io.github.oxidefrp.semantics.EventStream
-import io.github.oxidefrp.semantics.Signal
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Signal
 
 data class Output(
     val inputStream: EventStream<Int>,
