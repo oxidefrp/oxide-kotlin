@@ -17,74 +17,80 @@ import io.github.oxidefrp.core.test_utils.shared.DivertOperator
 import kotlin.test.Test
 
 class CellOperatorsUnitTests {
-    @Test
-    fun testConstant() = testSystem {
-        val constCell = Cell.constant(8)
+    object Constant {
+        @Test
+        fun test() = testSystem {
+            val constCell = Cell.constant(8)
 
-        TestCheck(
-            subject = constCell,
-            name = "Const cell",
-            spec = CellSpec(
-                expectedInitialValue = 8,
-                expectedInnerValues = emptyList(),
-            ),
-        )
+            TestCheck(
+                subject = constCell,
+                name = "Const cell",
+                spec = CellSpec(
+                    expectedInitialValue = 8,
+                    expectedInnerValues = emptyList(),
+                ),
+            )
+        }
     }
 
-    @Test
-    fun testValue() {
-        // TODO: Implement when the `Signal` semantics / implementation
-        //       stabilizes
+    object Value {
+        @Test
+        fun test() {
+            // TODO: Implement when the `Signal` semantics / implementation
+            //       stabilizes
+        }
     }
 
-    @Test
-    fun testChanges() = testSystem {
-        val inputCell = buildInputCell(
-            initialValue = 0,
-            CellValueSpec(tick = Tick(t = 1), newValue = 10),
-            CellValueSpec(tick = Tick(t = 2), newValue = 20),
-            CellValueSpec(tick = Tick(t = 3), newValue = 30),
-            CellValueSpec(tick = Tick(t = 5), newValue = 50),
-        )
+    object Changes {
+        @Test
+        fun test() = testSystem {
+            val inputCell = buildInputCell(
+                initialValue = 0,
+                CellValueSpec(tick = Tick(t = 1), newValue = 10),
+                CellValueSpec(tick = Tick(t = 2), newValue = 20),
+                CellValueSpec(tick = Tick(t = 3), newValue = 30),
+                CellValueSpec(tick = Tick(t = 5), newValue = 50),
+            )
 
-        val changeStream = inputCell.changes
+            val changeStream = inputCell.changes
 
-        TestCheck(
-            subject = changeStream,
-            name = "Change stream",
-            spec = EventStreamSpec(
-                expectedEvents = listOf(
-                    EventOccurrenceDesc(
-                        tick = Tick(t = 1),
-                        event = ValueChange(
-                            oldValue = 0,
-                            newValue = 10,
+            TestCheck(
+                subject = changeStream,
+                name = "Change stream",
+                spec = EventStreamSpec(
+                    expectedEvents = listOf(
+                        EventOccurrenceDesc(
+                            tick = Tick(t = 1),
+                            event = ValueChange(
+                                oldValue = 0,
+                                newValue = 10,
+                            ),
                         ),
-                    ),
-                    EventOccurrenceDesc(
-                        tick = Tick(t = 2),
-                        event = ValueChange(
-                            oldValue = 10,
-                            newValue = 20,
+                        EventOccurrenceDesc(
+                            tick = Tick(t = 2),
+                            event = ValueChange(
+                                oldValue = 10,
+                                newValue = 20,
+                            ),
                         ),
-                    ),
-                    EventOccurrenceDesc(
-                        tick = Tick(t = 3),
-                        event = ValueChange(
-                            oldValue = 20,
-                            newValue = 30,
+                        EventOccurrenceDesc(
+                            tick = Tick(t = 3),
+                            event = ValueChange(
+                                oldValue = 20,
+                                newValue = 30,
+                            ),
                         ),
-                    ),
-                    EventOccurrenceDesc(
-                        tick = Tick(t = 5),
-                        event = ValueChange(
-                            oldValue = 30,
-                            newValue = 50,
+                        EventOccurrenceDesc(
+                            tick = Tick(t = 5),
+                            event = ValueChange(
+                                oldValue = 30,
+                                newValue = 50,
+                            ),
                         ),
                     ),
                 ),
-            ),
-        )
+            )
+        }
     }
 
     object Map {
@@ -153,45 +159,47 @@ class CellOperatorsUnitTests {
         }
     }
 
-    @Test
-    fun testApply() = testSystem {
-        val functionCell: Cell<(Int) -> String> = buildInputCell(
-            initialValue = fun(n: Int) = "&$n",
-            CellValueSpec(
-                tick = Tick(t = 2),
-                newValue = fun(n: Int) = "%$n",
-            ),
-            CellValueSpec(
-                tick = Tick(t = 4),
-                newValue = fun(n: Int) = "^$n",
-            ),
-        )
-
-        val argumentCell = buildInputCell(
-            initialValue = 10,
-            CellValueSpec(tick = Tick(t = 1), newValue = 20),
-            CellValueSpec(tick = Tick(t = 2), newValue = 30),
-            CellValueSpec(tick = Tick(t = 3), newValue = 40),
-        )
-
-        val appliedCell = Cell.apply(
-            function = functionCell,
-            argument = argumentCell,
-        )
-
-        TestCheck(
-            subject = appliedCell,
-            name = "Applied cell",
-            spec = CellSpec(
-                expectedInitialValue = "&10",
-                expectedInnerValues = listOf(
-                    CellValueDesc(tick = Tick(t = 1), value = "&20"),
-                    CellValueDesc(tick = Tick(t = 2), value = "%30"),
-                    CellValueDesc(tick = Tick(t = 3), value = "%40"),
-                    CellValueDesc(tick = Tick(t = 4), value = "^40"),
+    object Apply {
+        @Test
+        fun test() = testSystem {
+            val functionCell: Cell<(Int) -> String> = buildInputCell(
+                initialValue = fun(n: Int) = "&$n",
+                CellValueSpec(
+                    tick = Tick(t = 2),
+                    newValue = fun(n: Int) = "%$n",
                 ),
-            ),
-        )
+                CellValueSpec(
+                    tick = Tick(t = 4),
+                    newValue = fun(n: Int) = "^$n",
+                ),
+            )
+
+            val argumentCell = buildInputCell(
+                initialValue = 10,
+                CellValueSpec(tick = Tick(t = 1), newValue = 20),
+                CellValueSpec(tick = Tick(t = 2), newValue = 30),
+                CellValueSpec(tick = Tick(t = 3), newValue = 40),
+            )
+
+            val appliedCell = Cell.apply(
+                function = functionCell,
+                argument = argumentCell,
+            )
+
+            TestCheck(
+                subject = appliedCell,
+                name = "Applied cell",
+                spec = CellSpec(
+                    expectedInitialValue = "&10",
+                    expectedInnerValues = listOf(
+                        CellValueDesc(tick = Tick(t = 1), value = "&20"),
+                        CellValueDesc(tick = Tick(t = 2), value = "%30"),
+                        CellValueDesc(tick = Tick(t = 3), value = "%40"),
+                        CellValueDesc(tick = Tick(t = 4), value = "^40"),
+                    ),
+                ),
+            )
+        }
     }
 
     object Diverts {
