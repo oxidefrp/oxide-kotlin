@@ -80,7 +80,6 @@ class EventStreamOperatorsUnitTests {
     }
 
     object Spark {
-
         @Test
         fun test() {
             val sparkStream = EventStream.spark(13)
