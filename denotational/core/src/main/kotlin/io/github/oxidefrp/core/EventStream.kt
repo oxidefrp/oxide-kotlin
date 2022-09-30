@@ -4,6 +4,7 @@ import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
 import io.github.oxidefrp.core.shared.StateScheduler
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
+import io.github.oxidefrp.core.shared.pullEnter
 
 abstract class EventStream<out A> {
     data class Loop1<A, R>(
@@ -75,25 +76,6 @@ abstract class EventStream<out A> {
         fun <S> enterUnit(
             stream: EventStream<State<S, Unit>>,
         ): StateScheduler<S, Unit> = pullEnter(stream.map { it.asMomentState() }).map { }
-
-        fun <S, A> pullEnter(
-            stream: EventStream<MomentState<S, A>>,
-        ): StateScheduler<S, EventStream<A>> = object : StateScheduler<S, EventStream<A>>() {
-            override fun scheduleDirectly(
-                stateSignal: Signal<S>,
-            ) = object : State<StateSchedulerLayer<S>, EventStream<A>>() {
-                override fun enterDirectly(
-                    oldState: StateSchedulerLayer<S>,
-                ): Pair<StateSchedulerLayer<S>, EventStream<A>> {
-                    val previousSchedulerLayer = oldState
-
-                    return previousSchedulerLayer.squashWith(
-                        stateSignal = stateSignal,
-                        stream = stream
-                    )
-                }
-            }
-        }
 
         fun <A, R> pullLooped1(
             f: (streamA: EventStream<A>) -> Moment<EventStream.Loop1<A, R>>,

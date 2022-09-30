@@ -2,6 +2,7 @@ package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
+import io.github.oxidefrp.core.shared.pullEnter
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
 import io.github.oxidefrp.core.test_framework.shared.TestCheck

@@ -4,6 +4,10 @@ import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
+import io.github.oxidefrp.core.shared.construct
+import io.github.oxidefrp.core.shared.enter
+import io.github.oxidefrp.core.shared.pull
+import io.github.oxidefrp.core.shared.pullEnter
 import io.github.oxidefrp.core.shared.unzip2
 
 data class ValueChange<out A>(
@@ -119,44 +123,7 @@ abstract class Cell<out A> {
             }
         }
 
-        fun <A> pull(
-            cell: Cell<Moment<A>>,
-        ): Moment<Cell<A>> = cell.sample().pullOf { initialMoment ->
-            initialMoment.pullOf { initialValue ->
-                EventStream.pull(cell.newValues).hold(initialValue)
-            }
-        }
 
-        fun <S, A> enter(
-            cell: Cell<State<S, A>>,
-        ): StateStructure<S, Cell<A>> = Moment.enter(cell.sample()).constructOf { initialValue ->
-            EventStream.enter(cell.newValues).pullOf { newValues ->
-                newValues.hold(initialValue)
-            }
-        }
-
-        fun <S, A> pullEnter(
-            cell: Cell<MomentState<S, A>>,
-        ): StateStructure<S, Cell<A>> = Moment.pullEnter(cell.sample()).constructOf { initialValue ->
-            EventStream.pullEnter(cell.newValues).pullOf { newValues ->
-                newValues.hold(initialValue)
-            }
-        }
-
-        fun <S, A> construct(
-            cell: Cell<StateStructure<S, A>>,
-        ): StateStructure<S, Cell<A>> = object : StateStructure<S, Cell<A>>() {
-            override fun constructDirectly(
-                stateSignal: Signal<S>,
-            ): MomentState<StateSchedulerLayer<S>, Cell<A>> = MomentState.enterDirectly { inputLayer ->
-                cell.pullOf { structure ->
-                    structure.constructDirectly(stateSignal = stateSignal).enterDirectly(inputLayer)
-                }.map(Cell.Companion::unzip2).map { (layerCell, valueCell) ->
-                    val outputLayer = StateSchedulerLayer.divert(layerCell)
-                    return@map Pair(outputLayer, valueCell)
-                }
-            }
-        }
 
         fun <A, B> map1(
             ca: Cell<A>,
