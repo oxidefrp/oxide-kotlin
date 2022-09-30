@@ -1,6 +1,6 @@
 package io.github.oxidefrp.core
 
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.ExternalSubscription
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -13,7 +13,7 @@ class EventStreamVerifier<A>(
 ) {
     private val receivedEvents = mutableListOf<A>()
 
-    private val subscription = stream.subscribe { event ->
+    private val subscription = stream.subscribeExternally { event ->
         receivedEvents.add(event)
     }
 
@@ -65,7 +65,7 @@ class EventStreamOperatorsOperationalTests {
 
             emitOrNull = it
 
-            object : Subscription {
+            object : ExternalSubscription {
                 override fun cancel() {
                     if (isCancelled) throw IllegalStateException("Subscription is already cancelled")
                     isCancelled = true
@@ -115,7 +115,7 @@ class EventStreamOperatorsOperationalTests {
     fun testNever() {
         val stream = EventStream.never<Int>()
 
-        stream.subscribe { }.cancel()
+        stream.subscribeExternally { }.cancel()
     }
 
     // TODO: Remove unnecessary operational tests when all semantics unit tests

@@ -11,7 +11,7 @@ import io.github.oxidefrp.core.impl.event_stream.DivertEarlyEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.DivertLateEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.EventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.ObservingEventStreamVertex
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.impl.signal.SamplingSignalVertex
 import io.github.oxidefrp.core.impl.signal.SignalVertex
 
@@ -24,7 +24,12 @@ internal class CellSampleSignalVertex<A>(
 internal class CellChangesEventStreamVertex<A>(
     private val cell: CellVertex<A>,
 ) : ObservingEventStreamVertex<ValueChange<A>>() {
-    override fun observe(): Subscription = cell.registerDependent(this)
+    override fun observe(
+        transaction: Transaction,
+    ): TransactionSubscription = cell.registerDependent(
+        transaction = transaction,
+        dependent = this,
+    )
 
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<ValueChange<A>> =
         cell.pullNewValue(transaction = transaction).map { newValue ->
@@ -157,12 +162,17 @@ abstract class Cell<out A> {
 
     fun <B> switchOf(transform: (A) -> Cell<B>): Cell<B> = switch(map(transform))
 
-    fun reactExternally(action: (A) -> Unit): Subscription {
+    private fun reactExternally(
+        action: (A) -> Unit,
+    ) = Transaction.wrap { transaction ->
         val currentValue = value.sampleExternally()
 
         action(currentValue)
 
-        return newValues.subscribe(action)
+        newValues.subscribe(
+            transaction = transaction,
+            listener = action,
+        )
     }
 
     fun reactExternallyIndefinitely(action: (A) -> Unit) {

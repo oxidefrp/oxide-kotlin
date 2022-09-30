@@ -126,7 +126,7 @@ class CellOperatorsOperationalUnitTests {
 
         val result = Cell.switch(source)
 
-        result.changes.subscribe { }
+        result.changes.subscribeExternally { }
 
         assertEquals(
             expected = 1,
@@ -298,7 +298,7 @@ class CellOperatorsOperationalUnitTests {
             argument = argumentCell,
         )
 
-        result.changes.subscribe { }
+        result.changes.subscribeExternally { }
 
         assertEquals(
             expected = "#1",
@@ -321,7 +321,7 @@ class CellOperatorsOperationalUnitTests {
             argument = argumentCell,
         )
 
-        val subscription = result.changes.subscribe { }
+        val subscription = result.changes.subscribeExternally { }
 
         assertEquals(
             expected = 1,

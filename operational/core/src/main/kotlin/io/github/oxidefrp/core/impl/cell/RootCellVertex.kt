@@ -7,9 +7,9 @@ internal abstract class RootCellVertex<A> : CellVertex<A>() {
     final override fun process(transaction: Transaction) {
     }
 
-    final override fun onFirstDependencyAdded() {
+    final override fun onFirstDependencyAdded(transaction: Transaction) {
     }
 
-    final override fun onLastDependencyRemoved() {
+    final override fun onLastDependencyRemoved(transaction: Transaction) {
     }
 }

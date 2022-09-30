@@ -3,7 +3,7 @@ package io.github.oxidefrp.core.test_framework.input
 import io.github.oxidefrp.core.impl.Option
 import io.github.oxidefrp.core.impl.Transaction
 import io.github.oxidefrp.core.impl.cell.ObservingCellVertex
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.test_framework.TickStream
 import io.github.oxidefrp.core.test_framework.shared.InputCellSpec
 
@@ -17,6 +17,6 @@ internal class InputCellVertex<A>(
     override fun sampleOldValue(): A =
         spec.getOldValue(tick = tickStream.currentTick)
 
-    override fun observe(): Subscription =
-        tickStream.vertex.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription =
+        tickStream.vertex.registerDependent(transaction = transaction, dependent = this)
 }

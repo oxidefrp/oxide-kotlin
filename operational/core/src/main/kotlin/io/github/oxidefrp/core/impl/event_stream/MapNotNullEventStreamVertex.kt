@@ -7,8 +7,8 @@ internal class MapNotNullEventStreamVertex<A, B : Any>(
     private val source: EventStreamVertex<A>,
     private val transform: (A) -> B?,
 ) : ObservingEventStreamVertex<B>() {
-    override fun observe(): Subscription =
-        source.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription =
+        source.registerDependent(transaction = transaction, dependent = this)
 
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<B> =
         source.pullCurrentOccurrence(transaction = transaction).flatMap {

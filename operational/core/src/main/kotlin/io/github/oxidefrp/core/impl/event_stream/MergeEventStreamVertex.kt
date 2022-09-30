@@ -9,9 +9,9 @@ internal class MergeEventStreamVertex<A>(
     private val source2: EventStreamVertex<A>,
     private val combine: (A, A) -> A,
 ) : ObservingEventStreamVertex<A>() {
-    override fun observe(): Subscription {
-        val subscription1 = source1.registerDependent(this)
-        val subscription2 = source2.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription {
+        val subscription1 = source1.registerDependent(transaction = transaction, dependent = this)
+        val subscription2 = source2.registerDependent(transaction = transaction, dependent = this)
         return subscription1 + subscription2
     }
 

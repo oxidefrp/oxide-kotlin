@@ -1,6 +1,6 @@
 package io.github.oxidefrp.core.impl
 
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 
 /// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef
 external class WeakRef<T : Any>(target: T) {
@@ -35,18 +35,26 @@ internal abstract class DependencyVertex : Vertex() {
     val referenceCount: Int
         get() = _dependents.size
 
-    // Thought: Should this accept a `transaction` argument?
-    fun registerDependent(dependent: Vertex): Subscription =
-        registerDependentRef(
-            dependentRef = VertexRef.Strong(vertex = dependent)
-        )
+    fun registerDependent(
+        transaction: Transaction,
+        dependent: Vertex,
+    ): TransactionSubscription = registerDependentRef(
+        transaction = transaction,
+        dependentRef = VertexRef.Strong(vertex = dependent)
+    )
 
-    fun registerDependentWeak(dependent: Vertex): Subscription =
-        registerDependentRef(
-            dependentRef = VertexRef.Weak(targetVertex = dependent)
-        )
+    fun registerDependentWeak(
+        transaction: Transaction,
+        dependent: Vertex,
+    ): TransactionSubscription = registerDependentRef(
+        transaction = transaction,
+        dependentRef = VertexRef.Weak(targetVertex = dependent)
+    )
 
-    private fun registerDependentRef(dependentRef: VertexRef): Subscription {
+    private fun registerDependentRef(
+        transaction: Transaction,
+        dependentRef: VertexRef,
+    ): TransactionSubscription {
         if (dependentRef.vertex == this) {
             throw IllegalArgumentException("Attempted to make vertex self-dependent")
         }
@@ -58,11 +66,11 @@ internal abstract class DependencyVertex : Vertex() {
         }
 
         if (_dependents.size == 1) {
-            onFirstDependencyAdded()
+            onFirstDependencyAdded(transaction)
         }
 
-        return object : Subscription {
-            override fun cancel() {
+        return object : TransactionSubscription {
+            override fun cancel(transaction: Transaction) {
                 val wasRemoved = _dependents.remove(dependentRef)
 
                 if (!wasRemoved) {
@@ -70,13 +78,13 @@ internal abstract class DependencyVertex : Vertex() {
                 }
 
                 if (_dependents.isEmpty()) {
-                    onLastDependencyRemoved()
+                    onLastDependencyRemoved(transaction)
                 }
             }
         }
     }
 
-    abstract fun onFirstDependencyAdded()
+    abstract fun onFirstDependencyAdded(transaction: Transaction)
 
-    abstract fun onLastDependencyRemoved()
+    abstract fun onLastDependencyRemoved(transaction: Transaction)
 }

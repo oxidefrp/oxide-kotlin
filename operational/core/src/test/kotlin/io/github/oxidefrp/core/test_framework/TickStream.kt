@@ -31,8 +31,8 @@ internal class TickStream : EventStream<Tick>(), TickProvider {
             transaction: Transaction,
         ): Option<Tick> = Some(currentTick)
 
-        override fun onFirstDependencyAdded() {}
+        override fun onFirstDependencyAdded(transaction: Transaction) {}
 
-        override fun onLastDependencyRemoved() {}
+        override fun onLastDependencyRemoved(transaction: Transaction) {}
     }
 }

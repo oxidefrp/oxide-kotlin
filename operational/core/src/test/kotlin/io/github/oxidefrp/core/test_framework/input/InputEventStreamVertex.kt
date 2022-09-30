@@ -3,7 +3,7 @@ package io.github.oxidefrp.core.test_framework.input
 import io.github.oxidefrp.core.impl.Option
 import io.github.oxidefrp.core.impl.Transaction
 import io.github.oxidefrp.core.impl.event_stream.ObservingEventStreamVertex
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.test_framework.TickStream
 import io.github.oxidefrp.core.test_framework.shared.InputStreamSpec
 
@@ -14,6 +14,6 @@ internal class InputEventStreamVertex<A>(
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A> =
         Option.of(spec.getOccurrence(tick = tickStream.currentTick)?.event)
 
-    override fun observe(): Subscription =
-        tickStream.vertex.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription =
+        tickStream.vertex.registerDependent(transaction = transaction, dependent = this)
 }

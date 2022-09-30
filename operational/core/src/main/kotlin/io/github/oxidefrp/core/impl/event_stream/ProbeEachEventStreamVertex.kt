@@ -7,8 +7,8 @@ import io.github.oxidefrp.core.impl.Transaction
 internal class ProbeEachEventStreamVertex<A>(
     private val stream: EventStreamVertex<Signal<A>>,
 ) : ObservingEventStreamVertex<A>() {
-    override fun observe(): Subscription =
-        stream.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription =
+        stream.registerDependent(transaction = transaction, dependent = this)
 
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A> =
         stream.pullCurrentOccurrence(transaction = transaction).map { signal ->

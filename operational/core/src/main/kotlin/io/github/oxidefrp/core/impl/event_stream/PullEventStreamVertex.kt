@@ -7,8 +7,8 @@ import io.github.oxidefrp.core.impl.Transaction
 internal class PullEventStreamVertex<A>(
     private val source: EventStreamVertex<Moment<A>>,
 ) : ObservingEventStreamVertex<A>() {
-    override fun observe(): Subscription =
-        source.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription =
+        source.registerDependent(transaction = transaction, dependent = this)
 
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A> =
         source.pullCurrentOccurrence(transaction = transaction).map { moment ->
