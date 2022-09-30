@@ -1,18 +1,26 @@
 package io.github.oxidefrp.core.shared
 
 import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.Instant
+import io.github.oxidefrp.core.S
+import io.github.oxidefrp.core.StateSchedulerLayer
+import io.github.oxidefrp.core.Time
 import io.github.oxidefrp.core.ValueChange
+import io.github.oxidefrp.core.momentState
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.CellValueSpec
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
 import io.github.oxidefrp.core.test_framework.shared.FiniteInputCellSpec
+import io.github.oxidefrp.core.test_framework.shared.FiniteInputStreamSpec
+import io.github.oxidefrp.core.test_framework.shared.InputSignalSpec
 import io.github.oxidefrp.core.test_framework.shared.TestCheck
 import io.github.oxidefrp.core.test_framework.shared.TestSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
 import io.github.oxidefrp.core.test_framework.testSystem
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class CellSharedUnitTests {
     object Constant {
@@ -194,6 +202,135 @@ class CellSharedUnitTests {
                         CellValueDesc(tick = Tick(t = 2), value = "%30"),
                         CellValueDesc(tick = Tick(t = 3), value = "%40"),
                         CellValueDesc(tick = Tick(t = 4), value = "^40"),
+                    ),
+                ),
+            )
+        }
+    }
+
+    object PullEnter {
+        private val stateSignalSpec = InputSignalSpec {
+            when (it) {
+                Tick(t = 20) -> S(sum = 20)
+                Tick(t = 30) -> S(sum = 30)
+                Tick(t = 35) -> S(sum = 35)
+                else -> throw UnsupportedOperationException("Unexpected tick: $it")
+            }
+        }
+
+        private val inputStateStreamSpec = FiniteInputStreamSpec(
+            EventOccurrenceDesc(tick = Tick(10), event = S(sum = 10)),
+            EventOccurrenceDesc(tick = Tick(25), event = S(sum = 25)),
+            EventOccurrenceDesc(tick = Tick(40), event = S(sum = 40)),
+            EventOccurrenceDesc(tick = Tick(50), event = S(sum = 50)),
+        )
+
+        private val sourceCellSpec = FiniteInputCellSpec(
+            initialValue = momentState(n = 1),
+            CellValueSpec(tick = Tick(t = 20), newValue = momentState(n = 2)),
+            CellValueSpec(tick = Tick(t = 30), newValue = momentState(n = 3)),
+            CellValueSpec(tick = Tick(t = 40), newValue = momentState(n = 4)),
+            CellValueSpec(tick = Tick(t = 50), newValue = momentState(n = 5)),
+        )
+
+        @Test
+        fun testNoCollision() = testSystem {
+            // The time of entering does not "collide" with a cell's new value
+
+            val stateSignal = buildInputSignal(stateSignalSpec)
+            val inputStateStream = buildInputStream(inputStateStreamSpec)
+            val sourceCell = buildInputCell(sourceCellSpec)
+
+            val inputLayer = StateSchedulerLayer(stateStream = inputStateStream)
+
+            val (outputLayer, outputCell) = Cell.pullEnter(sourceCell).constructDirectly(
+                stateSignal = stateSignal,
+            ).pullEnterDirectly(
+                t = Time(35.0),
+                oldState = inputLayer,
+            )
+
+            TestSpec(
+                checks = listOf(
+                    TestCheck(
+                        subject = outputLayer.stateStream,
+                        name = "Output state stream",
+                        spec = EventStreamSpec(
+                            expectedEvents = listOf(
+                                EventOccurrenceDesc(tick = Tick(t = 10), event = S(sum = 10)),
+                                EventOccurrenceDesc(tick = Tick(t = 20), event = S(sum = 20 + 2)),
+                                EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
+                                EventOccurrenceDesc(tick = Tick(t = 30), event = S(sum = 30 + 3)),
+                                EventOccurrenceDesc(tick = Tick(t = 35), event = S(sum = 35 + 3)), // moment of entering
+                                EventOccurrenceDesc(tick = Tick(t = 40), event = S(sum = 40 + 4)),
+                                EventOccurrenceDesc(tick = Tick(t = 50), event = S(sum = 50 + 5)),
+                            )
+                        ),
+                    ),
+                    TestCheck(
+                        subject = outputCell,
+                        name = "Result cell",
+                        spec = CellSpec(
+                            expectedInitialValue = "35@35.0/3",
+                            matchFrontValuesOnly = true,
+                            expectedInnerValues = listOf(
+                                CellValueDesc(tick = Tick(t = 40), value = "40@40.0/4"),
+                                CellValueDesc(tick = Tick(t = 50), value = "50@50.0/5"),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+
+        @Test
+        fun testCollision() = testSystem {
+            // The time of entering does "collide" with a cell's new value
+
+            val stateSignal = buildInputSignal(stateSignalSpec)
+            val inputStateStream = buildInputStream(inputStateStreamSpec)
+            val sourceCell = buildInputCell(sourceCellSpec)
+
+            val inputLayer = StateSchedulerLayer(stateStream = inputStateStream)
+
+            val (outputLayer, outputCell) = Cell.pullEnter(sourceCell).constructDirectly(
+                stateSignal = stateSignal,
+            ).pullEnterDirectly(
+                t = Time(40.0),
+                oldState = inputLayer,
+            )
+
+            TestSpec(
+                checks = listOf(
+                    TestCheck(
+                        subject = outputLayer.stateStream,
+                        name = "Output state stream",
+                        spec = EventStreamSpec(
+                            expectedEvents = listOf(
+                                EventOccurrenceDesc(tick = Tick(t = 10), event = S(sum = 10)),
+                                EventOccurrenceDesc(tick = Tick(t = 20), event = S(sum = 20 + 2)),
+                                EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
+                                EventOccurrenceDesc(tick = Tick(t = 30), event = S(sum = 30 + 3)),
+                                // Thought: Maybe just the new state should be entered? (the +4)
+                                EventOccurrenceDesc(
+                                    tick = Tick(t = 40),
+                                    event = S(sum = 40 + 3 + 4)
+                                ), // moment of entering
+                                EventOccurrenceDesc(tick = Tick(t = 50), event = S(sum = 50 + 5)),
+                            )
+                        ),
+                    ),
+                    TestCheck(
+                        subject = outputCell,
+                        name = "Result cell",
+                        spec = CellSpec(
+                            expectedInitialValue =  "40@40.0/3",
+                            matchFrontValuesOnly = true,
+                            expectedInnerValues = listOf(
+                                CellValueDesc(tick = Tick(t = 40), value = "43@40.0/4"),
+                                CellValueDesc(tick = Tick(t = 50), value = "50@50.0/5"),
+                            ),
+                        ),
                     ),
                 ),
             )
