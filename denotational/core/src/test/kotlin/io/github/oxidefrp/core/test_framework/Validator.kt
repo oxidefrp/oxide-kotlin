@@ -14,8 +14,10 @@ internal abstract class Validator {
 }
 
 internal fun <A> findEvents(
+    startTick: Tick,
     stream: EventStream<A>,
 ): List<EventOccurrenceDesc<A>> = stream.occurrences
+    .takeNotBefore(startTick.asTime)
     .takeNotAfter(Tick.maxTick.asTime)
     .toList().map {
         EventOccurrenceDesc(

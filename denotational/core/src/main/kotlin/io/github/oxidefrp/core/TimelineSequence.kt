@@ -167,7 +167,8 @@ abstract class TimelineSequence<out E> {
             override val instants: PureSequence<Instant<A>> = PureSequence.ofSingle(occurrence)
         }
 
-        fun <A> ofInstants(vararg occurrences: Instant<A>): TimelineSequence<A> = ofSequence(occurrences.asPureSequence())
+        fun <A> ofInstants(vararg occurrences: Instant<A>): TimelineSequence<A> =
+            ofSequence(occurrences.asPureSequence())
 
         fun <A> ofSequence(occurrences: PureSequence<Instant<A>>) = object : TimelineSequence<A>() {
             override val instants: PureSequence<Instant<A>> = occurrences
@@ -235,7 +236,8 @@ abstract class TimelineSequence<out E> {
     }
 
     fun <R : Any> mapNotNull(transform: (Time, E) -> R?): TimelineSequence<R> = object : TimelineSequence<R>() {
-        override val instants: PureSequence<Instant<R>> = this@TimelineSequence.instants.map { it.mapNotNull(transform) }
+        override val instants: PureSequence<Instant<R>> =
+            this@TimelineSequence.instants.map { it.mapNotNull(transform) }
     }
 
     fun filter(predicate: (E) -> Boolean): TimelineSequence<E> = object : TimelineSequence<E>() {
@@ -252,6 +254,12 @@ abstract class TimelineSequence<out E> {
 
     fun takeBefore(time: Time): TimelineSequence<E> = object : TimelineSequence<E>() {
         override val instants: PureSequence<Instant<E>> = this@TimelineSequence.instants.takeWhile { instant ->
+            instant.time < time
+        }
+    }
+
+    fun takeNotBefore(time: Time): TimelineSequence<E> = object : TimelineSequence<E>() {
+        override val instants: PureSequence<Instant<E>> = this@TimelineSequence.instants.dropWhile { instant ->
             instant.time < time
         }
     }

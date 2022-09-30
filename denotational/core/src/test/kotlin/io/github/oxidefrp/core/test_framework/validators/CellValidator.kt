@@ -12,7 +12,7 @@ import io.github.oxidefrp.core.test_framework.shared.Tick
 internal class CellValidator<A>(
     private val cellSpec: EffectiveCellSpec<A>,
     private val cell: Cell<A>,
-    @Suppress("UNUSED_PARAMETER") startTick: Tick,
+    private val startTick: Tick,
 ) : Validator() {
     override fun validate(): Issue? = CellIssue.validate(
         cellSpec = cellSpec,
@@ -21,6 +21,7 @@ internal class CellValidator<A>(
             moment = cell.sample(),
         ),
         newValues = findEvents(
+            startTick = startTick,
             stream = cell.newValues,
         ),
     )

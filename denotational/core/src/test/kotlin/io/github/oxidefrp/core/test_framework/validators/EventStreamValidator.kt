@@ -10,16 +10,12 @@ import io.github.oxidefrp.core.test_framework.shared.Tick
 internal class EventStreamValidator<A>(
     private val streamSpec: EventStreamSpec<A>,
     private val stream: EventStream<A>,
-    /**
-     * [startTick] could be used to more explicitly reject events that happened
-     * before the validation start time, but such events will still be rejected
-     * as non-matching the specification.
-     */
-    @Suppress("UNUSED_PARAMETER") startTick: Tick,
+    private val startTick: Tick,
 ) : Validator() {
     override fun validate() = EventStreamIssue.validate(
         streamSpec = streamSpec,
         events = findEvents(
+            startTick = startTick,
             stream = stream,
         ),
     )
