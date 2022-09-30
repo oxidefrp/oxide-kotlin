@@ -14,7 +14,7 @@ import io.github.oxidefrp.core.test_framework.shared.Tick
 import io.github.oxidefrp.core.test_framework.testSystem
 import kotlin.test.Test
 
-class CellOperatorsUnitTests {
+class CellSharedUnitTests {
     object Constant {
         @Test
         fun test() = testSystem {
