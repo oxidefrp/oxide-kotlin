@@ -2,12 +2,15 @@ package io.github.oxidefrp.core.test_framework
 
 import io.github.oxidefrp.core.Cell
 import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.Time
 import io.github.oxidefrp.core.TimelineSequence
 import io.github.oxidefrp.core.test_framework.shared.CellValueSpec
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 import io.github.oxidefrp.core.test_framework.shared.FiniteInputCellSpec
 import io.github.oxidefrp.core.test_framework.shared.FiniteInputStreamSpec
 import io.github.oxidefrp.core.test_framework.shared.InputCellSpec
+import io.github.oxidefrp.core.test_framework.shared.InputSignalSpec
 import io.github.oxidefrp.core.test_framework.shared.InputStreamSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
 
@@ -49,5 +52,17 @@ internal class TestContext(
             initialValue = initialValue,
             innerValues = innerValues,
         ),
+    )
+
+    fun <A> buildInputSignal(
+        spec: InputSignalSpec<A>,
+    ): Signal<A> = object : Signal<A>() {
+        override fun at(t: Time): A = spec.getValue(tick = t.asTick)
+    }
+
+    fun <A> buildInputSignal(
+        provideValue: (tick: Tick) -> A,
+    ): Signal<A> = buildInputSignal(
+        spec = InputSignalSpec(provideValue = provideValue)
     )
 }
