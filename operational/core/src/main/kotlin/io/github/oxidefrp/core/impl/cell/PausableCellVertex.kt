@@ -26,12 +26,14 @@ internal abstract class PausableCellVertex<A> : ReactiveCellVertex<A>() {
     }
 
     override fun storeNewValue(newValue: A) {
-        if (cachedOldValue.isNone()) {
-            throw IllegalStateException("Attempted to store a new value in an empty cache")
+        if (cachedOldValue.isSome()) {
+            // Write to the cache only if it's active
+            cachedOldValue = Some(newValue)
+        } else {
+            // It can happen that this action was queued for resetting, but the
+            // last dependency was removed later and the cache was cleared. In
+            // such case, we don't want to write to it.
         }
-
-        cachedOldValue = Some(newValue)
-
     }
 
     abstract fun onResumed(transaction: Transaction)
