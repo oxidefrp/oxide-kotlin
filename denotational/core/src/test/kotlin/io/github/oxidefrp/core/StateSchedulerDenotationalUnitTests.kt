@@ -1,11 +1,10 @@
 package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.test_utils.tableSignal
-import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class StateSchedulerUnitTests {
+class StateSchedulerDenotationalUnitTests {
     @Test
     fun testPullEnter() {
         val stateSignal = tableSignal(
