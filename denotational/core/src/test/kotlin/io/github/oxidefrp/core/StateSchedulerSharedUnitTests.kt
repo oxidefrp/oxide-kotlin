@@ -1,5 +1,6 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
@@ -11,8 +12,20 @@ import kotlin.test.Test
 
 class StateSchedulerSharedUnitTests {
     object EventStreamPullEnter {
+        private data class S(
+            val sum: Int,
+        )
+
         @Test
         fun test() = testSystem {
+            fun momentState(n: Int) = object : MomentState<S, String>() {
+                override fun enterDirectly(oldState: S): Moment<Pair<S, String>> = getCurrentTick().map {
+                    val result = "${oldState.sum}@${it.t}.0/$n"
+                    val newState = S(sum = oldState.sum + n)
+                    Pair(newState, result)
+                }
+            }
+
             val stateSignal = buildInputSignal {
                 when (it) {
                     Tick(t = 20) -> S(sum = 20)

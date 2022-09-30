@@ -13,6 +13,7 @@ import io.github.oxidefrp.core.test_framework.shared.InputCellSpec
 import io.github.oxidefrp.core.test_framework.shared.InputSignalSpec
 import io.github.oxidefrp.core.test_framework.shared.InputStreamSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
+import java.lang.IllegalStateException
 
 internal class TestContext(
     private val tickStream: EventStream<Tick>,
@@ -65,4 +66,9 @@ internal class TestContext(
     ): Signal<A> = buildInputSignal(
         spec = InputSignalSpec(provideValue = provideValue)
     )
+
+    fun getCurrentTick() = tickStream.currentOccurrence.map {
+        val occurrence = it ?: throw IllegalStateException("No current tick")
+        occurrence.event
+    }
 }
