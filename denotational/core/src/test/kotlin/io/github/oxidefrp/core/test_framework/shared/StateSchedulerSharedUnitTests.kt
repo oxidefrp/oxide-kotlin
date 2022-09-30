@@ -1,13 +1,10 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.test_framework.shared
 
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.pullEnter
-import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
-import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
-import io.github.oxidefrp.core.test_framework.shared.TestCheck
-import io.github.oxidefrp.core.test_framework.shared.TestSpec
-import io.github.oxidefrp.core.test_framework.shared.Tick
 import io.github.oxidefrp.core.test_framework.testSystem
 import kotlin.test.Test
 
