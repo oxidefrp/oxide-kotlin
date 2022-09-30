@@ -13,6 +13,7 @@ import io.github.oxidefrp.core.impl.event_stream.ProbeEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.PullEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SourceEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SparkMomentVertex
+import io.github.oxidefrp.core.impl.event_stream.SquashWithEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SubscriptionVertex
 import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.impl.getOrNull
@@ -210,6 +211,23 @@ fun <A, R> EventStream<A>.accum(
         EventStream.Loop1(
             streamA = steps,
             result = accumulator,
+        )
+    }
+}
+
+fun <A, B, C> EventStream<A>.squashWith(
+    other: EventStream<B>,
+    ifFirst: (A) -> C,
+    ifSecond: (B) -> C,
+    ifBoth: (A, B) -> C,
+): EventStream<C> = object : EventStream<C>() {
+    override val vertex: EventStreamVertex<C> by lazy {
+        SquashWithEventStreamVertex(
+            source1 = this@squashWith.vertex,
+            source2 = other.vertex,
+            ifFirst = ifFirst,
+            ifSecond = ifSecond,
+            ifBoth = ifBoth,
         )
     }
 }
