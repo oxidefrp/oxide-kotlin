@@ -71,64 +71,6 @@ class CellOperatorsOperationalUnitTests {
 
     object Switch {
         @Test
-        fun testExclusiveSourceChange() {
-            val result = Cell.switch(
-                Cell.ofInstants(
-                    initialValue = Cell.ofInstants(
-                        initialValue = 10,
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(2.0), element = null),
-                        Instant.strictNonNull(time = Time(3.0), element = 13),
-                    ),
-                ),
-            )
-
-            assertEquals(
-                expected = Cell.FullSegmentSequence(
-                    initialValue = 10,
-                    innerValues = TimelineSequence.ofInstants(
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(2.0), element = null),
-                        Instant.strictNonNull(time = Time(3.0), element = 13),
-                    ),
-                ),
-                actual = result.segmentSequence,
-            )
-        }
-
-        @Test
-        fun testExclusiveSwitch() {
-            val result = Cell.switch(
-                Cell.ofInstants(
-                    initialValue = Cell.ofInstants(
-                        initialValue = 10,
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(3.0), element = 13),
-                    ),
-                    Instant.strictNonNull(
-                        time = Time(2.0),
-                        element = Cell.ofInstants(
-                            initialValue = 20,
-                            Instant.strictNonNull(time = Time(4.0), element = 22),
-                        ),
-                    ),
-                ),
-            )
-
-            assertEquals(
-                expected = Cell.FullSegmentSequence(
-                    initialValue = 10,
-                    innerValues = TimelineSequence.ofInstants(
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(2.0), element = 20),
-                        Instant.strictNonNull(time = Time(4.0), element = 22),
-                    ),
-                ),
-                actual = result.segmentSequence,
-            )
-        }
-
-        @Test
         fun testSwitchWithSimultaneousSourceChange() {
             val result = Cell.switch(
                 Cell.ofInstants(
@@ -285,73 +227,6 @@ class CellOperatorsOperationalUnitTests {
             assertEquals(
                 expected = Instant.strictNonNull(time = Time(0.5), element = 20),
                 actual = cell.segmentSequence.innerValues.instants.first(),
-            )
-        }
-
-        @Test
-        fun testSwitchToOldValue() {
-            val result = Cell.switch(
-                Cell.ofInstants(
-                    initialValue = Cell.ofInstants(
-                        initialValue = 10,
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(3.0), element = 13),
-                    ),
-                    Instant.strictNonNull(
-                        time = Time(2.0),
-                        element = Cell.ofInstants(
-                            initialValue = 20,
-                            Instant.strictNonNull(time = Time(1.0), element = 21),
-                            Instant.strictNonNull(time = Time(4.0), element = 22),
-                        ),
-                    ),
-                ),
-            )
-
-            assertEquals(
-                expected = Cell.FullSegmentSequence(
-                    initialValue = 10,
-                    innerValues = TimelineSequence.ofInstants(
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(2.0), element = 21),
-                        Instant.strictNonNull(time = Time(4.0), element = 22),
-                    ),
-                ),
-                actual = result.segmentSequence,
-            )
-        }
-
-        @Test
-        fun testSwitchToNewValue() {
-            val result = Cell.switch(
-                Cell.ofInstants(
-                    initialValue = Cell.ofInstants(
-                        initialValue = 10,
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(3.0), element = 13),
-                    ),
-                    Instant.strictNonNull(
-                        time = Time(2.0),
-                        element = Cell.ofInstants(
-                            initialValue = 20,
-                            Instant.strictNonNull(time = Time(1.0), element = 21),
-                            Instant.strictNonNull(time = Time(2.0), element = 22),
-                            Instant.strictNonNull(time = Time(4.0), element = 23),
-                        ),
-                    ),
-                ),
-            )
-
-            assertEquals(
-                expected = Cell.FullSegmentSequence(
-                    initialValue = 10,
-                    innerValues = TimelineSequence.ofInstants(
-                        Instant.strictNonNull(time = Time(1.0), element = 11),
-                        Instant.strictNonNull(time = Time(2.0), element = 22),
-                        Instant.strictNonNull(time = Time(4.0), element = 23),
-                    ),
-                ),
-                actual = result.segmentSequence,
             )
         }
     }
