@@ -2,13 +2,10 @@ package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
-import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
 import io.github.oxidefrp.core.shared.construct
 import io.github.oxidefrp.core.shared.enter
-import io.github.oxidefrp.core.shared.pull
 import io.github.oxidefrp.core.shared.pullEnter
-import io.github.oxidefrp.core.shared.unzip2
 
 data class ValueChange<out A>(
     val oldValue: A,
@@ -249,10 +246,6 @@ abstract class Cell<out A> {
     fun <S, B> enterOf(
         transform: (A) -> State<S, B>,
     ): StateStructure<S, Cell<B>> = enter(map(transform))
-
-    fun <B> pullOf(
-        transform: (A) -> Moment<B>,
-    ): Moment<Cell<B>> = pull(map(transform))
 
     fun <S, B> pullEnterOf(
         transform: (A) -> MomentState<S, B>,

@@ -5,7 +5,7 @@ import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.Signal
 import io.github.oxidefrp.core.hold
-import io.github.oxidefrp.core.pullOf
+import io.github.oxidefrp.core.shared.pullOf
 
 abstract class StateStructure<S, out A> {
     companion object {

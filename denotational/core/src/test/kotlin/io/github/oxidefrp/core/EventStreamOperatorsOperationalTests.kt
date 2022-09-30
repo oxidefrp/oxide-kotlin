@@ -1,5 +1,6 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.pullOf
 import io.github.oxidefrp.core.test_utils.generateOccurrencesSequence
 import kotlin.math.sin
 import kotlin.test.Test
