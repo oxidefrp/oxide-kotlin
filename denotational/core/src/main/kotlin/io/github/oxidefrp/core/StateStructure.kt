@@ -1,5 +1,7 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.StateSchedulerLayer
+
 abstract class StateStructure<S, out A> {
     companion object {
         fun <S, A> construct(

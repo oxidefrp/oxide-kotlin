@@ -1,5 +1,8 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.StateScheduler
+import io.github.oxidefrp.core.shared.StateSchedulerLayer
+
 abstract class EventStream<out A> {
     data class Loop1<A, R>(
         val streamA: EventStream<A>,
