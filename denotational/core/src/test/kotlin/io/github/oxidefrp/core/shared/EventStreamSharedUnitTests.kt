@@ -5,6 +5,7 @@ import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.accum
 import io.github.oxidefrp.core.hold
 import io.github.oxidefrp.core.mergeWith
+import io.github.oxidefrp.core.squashWith
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
@@ -537,6 +538,48 @@ class EventStreamSharedUnitTests {
                                 EventOccurrenceDesc(tick = Tick(t = 10), event = "f"),
                                 EventOccurrenceDesc(tick = Tick(t = 11), event = "c"),
                                 EventOccurrenceDesc(tick = Tick(t = 16), event = "dg"),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+    }
+
+    object SquashWith {
+        @Test
+        fun test() = testSystem {
+            val sourceStream1 = buildInputStream(
+                EventOccurrenceDesc(tick = Tick(t = 1), event = 10),
+                EventOccurrenceDesc(tick = Tick(t = 5), event = 50),
+                EventOccurrenceDesc(tick = Tick(t = 10), event = 100),
+            )
+
+            val sourceStream2 = buildInputStream(
+                EventOccurrenceDesc(tick = Tick(t = 2), event = 'd'),
+                EventOccurrenceDesc(tick = Tick(t = 5), event = 'e'),
+                EventOccurrenceDesc(tick = Tick(t = 11), event = 'f'),
+            )
+
+            val squashedStream = sourceStream1.squashWith(
+                sourceStream2,
+                ifFirst = { "number: $it" },
+                ifSecond = { "character: $it" },
+                ifBoth = { n, c -> "both: $n/$c" },
+            )
+
+            TestSpec(
+                checks = listOf(
+                    TestCheck(
+                        subject = squashedStream,
+                        name = "Squashed stream",
+                        spec = EventStreamSpec(
+                            expectedEvents = listOf(
+                                EventOccurrenceDesc(tick = Tick(t = 1), event = "number: 10"),
+                                EventOccurrenceDesc(tick = Tick(t = 2), event = "character: d"),
+                                EventOccurrenceDesc(tick = Tick(t = 5), event = "both: 50/e"),
+                                EventOccurrenceDesc(tick = Tick(t = 10), event = "number: 100"),
+                                EventOccurrenceDesc(tick = Tick(t = 11), event = "character: f"),
                             ),
                         ),
                     ),
