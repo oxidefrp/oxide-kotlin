@@ -1,5 +1,7 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.State
+
 data class RealWorld(
     val files: Map<String, String>,
 ) {

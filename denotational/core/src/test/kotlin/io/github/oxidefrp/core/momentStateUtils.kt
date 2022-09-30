@@ -1,5 +1,7 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.MomentState
+
 fun momentState(n: Int) = object : MomentState<S, String>() {
     override fun enterDirectly(oldState: S): Moment<Pair<S, String>> =
         object : Moment<Pair<S, String>>() {

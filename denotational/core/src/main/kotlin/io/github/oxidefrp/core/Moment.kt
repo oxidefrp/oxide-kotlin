@@ -1,5 +1,8 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.MomentState
+import io.github.oxidefrp.core.shared.State
+
 abstract class Moment<out A> {
     companion object {
         fun <A> pure(value: A): Moment<A> =

@@ -1,6 +1,11 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.shared
 
-import io.github.oxidefrp.core.shared.StateSchedulerLayer
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.hold
+import io.github.oxidefrp.core.pullOf
 
 abstract class StateStructure<S, out A> {
     companion object {
