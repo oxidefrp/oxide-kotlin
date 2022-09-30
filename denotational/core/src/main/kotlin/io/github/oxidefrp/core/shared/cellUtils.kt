@@ -5,7 +5,7 @@ import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.Signal
 import io.github.oxidefrp.core.hold
-import io.github.oxidefrp.core.pullOf
+import io.github.oxidefrp.core.shared.pullOf
 
 fun <A> Cell.Companion.pull(
     cell: Cell<Moment<A>>,
@@ -52,6 +52,10 @@ fun <A, B> Cell.Companion.unzip2(
     cell.map { it.first },
     cell.map { it.second },
 )
+
+fun <A, B> Cell<A>.pullOf(
+    transform: (A) -> Moment<B>,
+): Moment<Cell<B>> = Cell.pull(map(transform))
 
 fun <A, B> Cell<A>.divertEarlyOf(
     transform: (A) -> EventStream<B>,

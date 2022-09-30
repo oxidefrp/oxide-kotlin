@@ -1,5 +1,6 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.pullOf
 import io.github.oxidefrp.core.test_utils.generateIntegerEventStream
 import kotlin.test.Test
 import kotlin.test.assertEquals

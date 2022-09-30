@@ -1,9 +1,8 @@
 package io.github.oxidefrp.core
 
-import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
 import io.github.oxidefrp.core.shared.StateScheduler
-import io.github.oxidefrp.core.shared.StateSchedulerLayer
+import io.github.oxidefrp.core.shared.enter
 import io.github.oxidefrp.core.shared.pullEnter
 
 abstract class EventStream<out A> {
@@ -68,11 +67,6 @@ abstract class EventStream<out A> {
                 }
             }
         }
-
-        fun <S, A> enter(
-            stream: EventStream<State<S, A>>,
-        ): StateScheduler<S, EventStream<A>> = pullEnter(stream.map { it.asMomentState() })
-
         fun <S> enterUnit(
             stream: EventStream<State<S, Unit>>,
         ): StateScheduler<S, Unit> = pullEnter(stream.map { it.asMomentState() }).map { }

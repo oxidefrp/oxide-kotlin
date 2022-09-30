@@ -33,3 +33,7 @@ fun <A, B> EventStream.Companion.unzip2(
 fun <A> EventStream<A>.orElse(
     other: EventStream<A>,
 ): EventStream<A> = mergeWith(other) { l, _ -> l }
+
+fun <S, A> EventStream.Companion.enter(
+    stream: EventStream<State<S, A>>,
+): StateScheduler<S, EventStream<A>> = pullEnter(stream.map { it.asMomentState() })

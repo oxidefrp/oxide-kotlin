@@ -4,7 +4,7 @@ import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.Time
 import io.github.oxidefrp.core.hold
-import io.github.oxidefrp.core.pullOf
+import io.github.oxidefrp.core.shared.pullOf
 
 fun main() {
     val prompts = EventStream.ofOccurrences(
