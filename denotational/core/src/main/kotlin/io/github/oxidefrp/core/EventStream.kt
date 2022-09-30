@@ -68,13 +68,6 @@ abstract class EventStream<out A> {
             }
         }
 
-        fun <A, B> unzip2(
-            stream: EventStream<Pair<A, B>>,
-        ): Pair<EventStream<A>, EventStream<B>> = Pair(
-            stream.map { it.first },
-            stream.map { it.second },
-        )
-
         fun <S, A> enter(
             stream: EventStream<State<S, A>>,
         ): StateScheduler<S, EventStream<A>> = pullEnter(stream.map { it.asMomentState() })
@@ -197,10 +190,6 @@ fun <A> EventStream<A>.mergeWith(
         )
     }
 }
-
-fun <A> EventStream<A>.orElse(
-    other: EventStream<A>,
-): EventStream<A> = mergeWith(other) { l, _ -> l }
 
 fun <A, B, C> mergeTimelineSequences(
     eventSequenceA: TimelineSequence<A>,
