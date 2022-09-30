@@ -3,6 +3,7 @@ package io.github.oxidefrp.core.impl.cell
 import io.github.oxidefrp.core.impl.None
 import io.github.oxidefrp.core.impl.Option
 import io.github.oxidefrp.core.impl.Some
+import io.github.oxidefrp.core.impl.Transaction
 import io.github.oxidefrp.core.impl.getOrElse
 
 // Thought: Would `CachingCellVertex` be a better name?
@@ -12,16 +13,16 @@ internal abstract class PausableCellVertex<A> : ReactiveCellVertex<A>() {
     final override val oldValue: A
         get() = cachedOldValue.getOrElse { sampleOldValue() }
 
-    final override fun onFirstDependencyAdded() {
+    final override fun onFirstDependencyAdded(transaction: Transaction) {
         cachedOldValue = Some(sampleOldValue())
 
-        onResumed()
+        onResumed(transaction = transaction)
     }
 
-    final override fun onLastDependencyRemoved() {
+    final override fun onLastDependencyRemoved(transaction: Transaction) {
         cachedOldValue = None()
 
-        onPaused()
+        onPaused(transaction = transaction)
     }
 
     override fun storeNewValue(newValue: A) {
@@ -33,9 +34,9 @@ internal abstract class PausableCellVertex<A> : ReactiveCellVertex<A>() {
 
     }
 
-    abstract fun onResumed()
+    abstract fun onResumed(transaction: Transaction)
 
-    abstract fun onPaused()
+    abstract fun onPaused(transaction: Transaction)
 
     abstract fun sampleOldValue(): A
 }

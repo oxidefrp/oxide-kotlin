@@ -136,7 +136,7 @@ private fun linkSvgTransform(
 
     element.transform.baseVal.initialize(svgTransform)
 
-    transformDiscretized.newValues.subscribeIndefinitely { transformNow ->
+    transformDiscretized.newValues.subscribeExternallyIndefinitely { transformNow ->
         svgTransform.setMatrix(
             matrix = transformNow.toSVGMatrix(svg),
         )

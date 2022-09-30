@@ -7,21 +7,21 @@ import io.github.oxidefrp.core.impl.Transaction
 internal abstract class DivertEventStreamVertex<A>(
     private val source: CellVertex<EventStream<A>>,
 ) : ObservingEventStreamVertex<A>() {
-    private var innerSubscription: Subscription? = null
+    private var innerSubscription: TransactionSubscription? = null
 
-    final override fun observe(): Subscription {
+    final override fun observe(transaction: Transaction): TransactionSubscription {
         val innerStreamVertex = source.oldValue.vertex
 
-        val outerSubscription = source.registerDependent(this)
+        val outerSubscription = source.registerDependent(transaction = transaction, dependent = this)
 
-        this.innerSubscription = innerStreamVertex.registerDependent(this)
+        this.innerSubscription = innerStreamVertex.registerDependent(transaction = transaction, dependent = this)
 
-        val innerMetaSubscription = object : Subscription {
-            override fun cancel() {
+        val innerMetaSubscription = object : TransactionSubscription {
+            override fun cancel(transaction: Transaction) {
                 val innerSubscription = this@DivertEventStreamVertex.innerSubscription
                     ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
-                innerSubscription.cancel()
+                innerSubscription.cancel(transaction = transaction)
             }
         }
 
@@ -37,9 +37,9 @@ internal abstract class DivertEventStreamVertex<A>(
             val subscription = innerSubscription
                 ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
-            subscription.cancel()
+            subscription.cancel(transaction = transaction)
 
-            innerSubscription = newInnerStreamVertex.registerDependent(this)
+            innerSubscription = newInnerStreamVertex.registerDependent(transaction = transaction, dependent = this)
         }
 
         val currentStream = chooseCurrentStream(

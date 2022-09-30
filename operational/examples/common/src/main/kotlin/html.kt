@@ -3,7 +3,7 @@ import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.Io
 import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.Signal
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.ExternalSubscription
 import io.github.oxidefrp.core.mapNested
 import io.github.oxidefrp.core.samplePerformOf
 import kotlinx.browser.document
@@ -210,7 +210,7 @@ data class GrowableScrollView(
                     style.display = "flex"
                     style.flexDirection = "column"
 
-                    addChild.subscribeIndefinitely {
+                    addChild.subscribeExternallyIndefinitely {
                         // FIXME: Transactions
                         appendChild(it.buildFinalElementExternally().sampleExternally().performExternally())
 
@@ -268,7 +268,7 @@ class ButtonInstance(
     val onPressed: EventStream<Event> = EventStream.source { emit ->
         element.addEventListener("click", emit)
 
-        object : Subscription {
+        object : ExternalSubscription {
             override fun cancel() {
                 element.removeEventListener("click", emit)
             }

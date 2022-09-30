@@ -17,7 +17,10 @@ internal class HoldCellVertex<A>(
             // The dependent is weak, so when nobody holds the reference to this
             // vertex anymore, it can be garbage collected. If nobody can ask
             // for the stored value, then there's no sense to update it forever.
-            it.registerDependentWeak(this)
+            it.registerDependentWeak(
+                transaction = transaction,
+                dependent = this,
+            )
         }
     }
 
@@ -36,10 +39,10 @@ internal class HoldCellVertex<A>(
         transaction.enqueueForProcess(this)
     }
 
-    override fun onFirstDependencyAdded() {
+    override fun onFirstDependencyAdded(transaction: Transaction) {
     }
 
-    override fun onLastDependencyRemoved() {
+    override fun onLastDependencyRemoved(transaction: Transaction) {
     }
 
     // Note that the old value can be accessed without relying on the steps
@@ -53,7 +56,7 @@ internal class HoldCellVertex<A>(
     }
 
     override fun pullNewValueUncached(transaction: Transaction): Option<A> =
-        // Note: This will register the dependent on the steps stream during the
+    // Note: This will register the dependent on the steps stream during the
         // first moment
         stepsVertex.pullCurrentOccurrence(transaction = transaction)
 

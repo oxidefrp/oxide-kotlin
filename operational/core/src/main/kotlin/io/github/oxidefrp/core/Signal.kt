@@ -1,8 +1,6 @@
 package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.impl.Transaction
-import io.github.oxidefrp.core.impl.event_stream.Subscription
-import io.github.oxidefrp.core.impl.moment.MomentIoMomentVertex
 import io.github.oxidefrp.core.impl.moment.MomentVertex
 import io.github.oxidefrp.core.impl.moment.SampleMomentVertex
 import io.github.oxidefrp.core.impl.signal.ApplySignalVertex
@@ -152,17 +150,6 @@ abstract class Signal<out A> {
 
     fun sampleExternally(): A = Transaction.wrap {
         vertex.pullCurrentValue(transaction = it)
-    }
-
-    fun reactExternally(
-        action: (A) -> Unit,
-        ticks: EventStream<Unit>,
-    ): Subscription {
-        val currentValue = sampleExternally()
-
-        action(currentValue)
-
-        return ticks.probe(this).subscribe(action)
     }
 }
 

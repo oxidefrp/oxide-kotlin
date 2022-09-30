@@ -2,6 +2,7 @@ package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.impl.Transaction
 import io.github.oxidefrp.core.impl.event_stream.EventStreamVertex
+import io.github.oxidefrp.core.impl.event_stream.ExternalSubscription
 import io.github.oxidefrp.core.impl.event_stream.FilterEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.MapEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.MapNotNullEventStreamVertex
@@ -12,8 +13,8 @@ import io.github.oxidefrp.core.impl.event_stream.ProbeEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.PullEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SourceEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SparkMomentVertex
-import io.github.oxidefrp.core.impl.event_stream.Subscription
 import io.github.oxidefrp.core.impl.event_stream.SubscriptionVertex
+import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.impl.getOrNull
 import io.github.oxidefrp.core.impl.moment.MomentVertex
 import io.github.oxidefrp.core.impl.signal.HoldMomentVertex
@@ -32,7 +33,7 @@ abstract class EventStream<out A> {
 
     companion object {
         fun <A> source(
-            subscribe: (emit: (A) -> Unit) -> Subscription,
+            subscribe: (emit: (A) -> Unit) -> ExternalSubscription,
         ): EventStream<A> =
             object : EventStream<A>() {
                 override val vertex: EventStreamVertex<A> = SourceEventStreamVertex(
@@ -139,16 +140,28 @@ abstract class EventStream<out A> {
         }
     }
 
-    fun subscribe(listener: (A) -> Unit): Subscription =
-        vertex.registerDependent(
-            SubscriptionVertex(
-                stream = this.vertex,
-                listener = listener,
-            ),
-        )
+    internal fun subscribe(
+        transaction: Transaction,
+        listener: (A) -> Unit,
+    ): TransactionSubscription = vertex.registerDependent(
+        transaction = transaction,
+        dependent = SubscriptionVertex(
+            stream = this.vertex,
+            listener = listener,
+        ),
+    )
 
-    fun subscribeIndefinitely(listener: (A) -> Unit) {
-        subscribe(listener)
+    fun subscribeExternally(
+        listener: (A) -> Unit,
+    ): ExternalSubscription = Transaction.wrap {
+        subscribe(
+            transaction = it,
+            listener = listener,
+        ).toExternal()
+    }
+
+    fun subscribeExternallyIndefinitely(listener: (A) -> Unit) {
+        subscribeExternally(listener)
     }
 }
 

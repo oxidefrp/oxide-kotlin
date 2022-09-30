@@ -9,8 +9,8 @@ internal class ProbeEventStreamVertex<A, B, C>(
     private val signal: SignalVertex<B>,
     private val combine: (A, B) -> C,
 ) : ObservingEventStreamVertex<C>() {
-    override fun observe(): Subscription =
-        stream.registerDependent(this)
+    override fun observe(transaction: Transaction): TransactionSubscription =
+        stream.registerDependent(transaction = transaction, dependent = this)
 
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<C> =
         stream.pullCurrentOccurrence(transaction = transaction).map { a ->

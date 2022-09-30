@@ -9,6 +9,7 @@ import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 internal class EventStreamRecorder<out A> private constructor(
     tickProvider: TickProvider,
     stream: EventStream<A>,
+    transaction: Transaction,
     initialRecordedEvents: List<EventOccurrenceDesc<A>>,
 ) {
     companion object {
@@ -28,6 +29,7 @@ internal class EventStreamRecorder<out A> private constructor(
             return EventStreamRecorder(
                 tickProvider = tickProvider,
                 stream = stream,
+                transaction = transaction,
                 initialRecordedEvents = initialRecordedEvent.toList(),
             )
         }
@@ -37,7 +39,8 @@ internal class EventStreamRecorder<out A> private constructor(
         val streamVertex = stream.vertex
 
         streamVertex.registerDependent(
-            object : Vertex() {
+            transaction = transaction,
+            dependent = object : Vertex() {
                 override fun getDependents() = emptyList<Vertex>()
 
                 override fun process(transaction: Transaction) {

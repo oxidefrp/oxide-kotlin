@@ -5,17 +5,17 @@ import io.github.oxidefrp.core.impl.Option
 import io.github.oxidefrp.core.impl.Some
 import io.github.oxidefrp.core.impl.Transaction
 import io.github.oxidefrp.core.impl.event_stream.CellVertex
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.impl.getOrElse
 
 internal class SwitchCellVertex<A>(
     private val source: CellVertex<Cell<A>>,
 ) : PausableCellVertex<A>() {
-    private var outerSubscription: Subscription? = null
+    private var outerSubscription: TransactionSubscription? = null
 
-    private var innerSubscription: Subscription? = null
+    private var innerSubscription: TransactionSubscription? = null
 
-    override fun onResumed() {
+    override fun onResumed(transaction: Transaction) {
         val innerCellVertex = source.oldValue.vertex
 
         if (outerSubscription != null) {
@@ -26,19 +26,19 @@ internal class SwitchCellVertex<A>(
             throw RuntimeException("Critical: there's already a remembered innerSubscription subscription")
         }
 
-        outerSubscription = source.registerDependent(this)
-        innerSubscription = innerCellVertex.registerDependent(this)
+        outerSubscription = source.registerDependent(transaction = transaction, dependent = this)
+        innerSubscription = innerCellVertex.registerDependent(transaction = transaction, dependent = this)
     }
 
-    override fun onPaused() {
+    override fun onPaused(transaction: Transaction) {
         val outerSubscription = this.outerSubscription
             ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
         val innerSubscription = this.innerSubscription
             ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
-        innerSubscription.cancel()
-        outerSubscription.cancel()
+        innerSubscription.cancel(transaction = transaction)
+        outerSubscription.cancel(transaction = transaction)
     }
 
     override fun sampleOldValue(): A =
@@ -57,9 +57,9 @@ internal class SwitchCellVertex<A>(
                 val subscription = innerSubscription
                     ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
-                subscription.cancel()
+                subscription.cancel(transaction = transaction)
 
-                innerSubscription = newInnerCellVertex.registerDependent(this)
+                innerSubscription = newInnerCellVertex.registerDependent(transaction = transaction, dependent = this)
 
                 Some(
                     newInnerCellVertex.pullNewValue(transaction = transaction)

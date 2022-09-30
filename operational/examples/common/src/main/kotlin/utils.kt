@@ -1,6 +1,6 @@
 import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.Signal
-import io.github.oxidefrp.core.impl.event_stream.Subscription
+import io.github.oxidefrp.core.impl.event_stream.ExternalSubscription
 import kotlinx.browser.window
 
 fun intervalStream(timeout: Int): EventStream<Unit> =
@@ -10,7 +10,7 @@ fun intervalStream(timeout: Int): EventStream<Unit> =
             timeout = timeout,
         )
 
-        object : Subscription {
+        object : ExternalSubscription {
             override fun cancel() {
                 window.clearInterval(handle = handle)
             }
@@ -29,8 +29,8 @@ fun intervalNowStream(timeout: Int): EventStream<Double> {
     return stream.probe(now)
 }
 
-private fun subscribeToAnimationFrames(callback: () -> Unit): Subscription =
-    object : Subscription {
+private fun subscribeToAnimationFrames(callback: () -> Unit): ExternalSubscription =
+    object : ExternalSubscription {
         fun requestFrame(): Int = window.requestAnimationFrame {
             callback()
             requestNextFrame()
