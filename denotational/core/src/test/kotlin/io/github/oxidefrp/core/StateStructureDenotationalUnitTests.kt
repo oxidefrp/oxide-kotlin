@@ -4,7 +4,7 @@ import io.github.oxidefrp.core.test_utils.tableSignal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-object StateStructureUnitTests {
+object StateStructureDenotationalUnitTests {
     /// Build a [StateStructure] object that adds [n] to every sum in the input
     /// layer [S] state, injects all the states from the [extra] stream, and
     /// returns [value] as the result.
