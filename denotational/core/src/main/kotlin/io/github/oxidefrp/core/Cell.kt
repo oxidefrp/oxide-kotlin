@@ -1,6 +1,9 @@
 package io.github.oxidefrp.core
 
+import io.github.oxidefrp.core.shared.MomentState
+import io.github.oxidefrp.core.shared.State
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
+import io.github.oxidefrp.core.shared.StateStructure
 
 data class ValueChange<out A>(
     val oldValue: A,
