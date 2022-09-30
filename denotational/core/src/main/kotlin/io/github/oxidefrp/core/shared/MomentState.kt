@@ -2,11 +2,7 @@ package io.github.oxidefrp.core.shared
 
 import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.Signal
-import io.github.oxidefrp.core.Time
 import io.github.oxidefrp.core.pullOf
-import io.github.oxidefrp.core.shared.State
-import io.github.oxidefrp.core.shared.StateSchedulerLayer
-import io.github.oxidefrp.core.shared.StateStructure
 
 abstract class MomentState<S, out A> {
     companion object {
@@ -138,9 +134,6 @@ abstract class MomentState<S, out A> {
     }
 
     abstract fun enterDirectly(oldState: S): Moment<Pair<S, A>>
-
-    fun pullEnterDirectly(t: Time, oldState: S): Pair<S, A> =
-        enterDirectly(oldState).pullDirectly(t)
 
     fun <B> pullEnterOf(
         transform: (A) -> MomentState<S, B>,
