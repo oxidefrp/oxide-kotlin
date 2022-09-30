@@ -2,7 +2,6 @@ package io.github.oxidefrp.core.shared
 
 import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.Signal
-import io.github.oxidefrp.core.pullOf
 
 abstract class MomentState<S, out A> {
     companion object {

@@ -2,6 +2,8 @@ package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
+import io.github.oxidefrp.core.shared.enter
+import io.github.oxidefrp.core.shared.pullEnter
 
 abstract class Moment<out A> {
     companion object {
@@ -13,22 +15,6 @@ abstract class Moment<out A> {
         fun <A> pull(moment: Moment<Moment<A>>): Moment<A> =
             object : Moment<A>() {
                 override fun pullDirectly(t: Time): A = moment.pullDirectly(t).pullDirectly(t)
-            }
-
-        fun <S, A> enter(moment: Moment<State<S, A>>): MomentState<S, A> =
-            object : MomentState<S, A>() {
-                override fun enterDirectly(oldState: S): Moment<Pair<S, A>> =
-                    moment.map { innerState ->
-                        innerState.enterDirectly(oldState)
-                    }
-            }
-
-        fun <S, A> pullEnter(moment: Moment<MomentState<S, A>>): MomentState<S, A> =
-            object : MomentState<S, A>() {
-                override fun enterDirectly(oldState: S): Moment<Pair<S, A>> =
-                    moment.pullOf { innerMoment ->
-                        innerMoment.enterDirectly(oldState)
-                    }
             }
 
         fun <A, B> apply(
@@ -99,9 +85,3 @@ abstract class Moment<out A> {
     fun pullExternally(): A =
         throw NotImplementedError("Operational operator has no semantic implementation")
 }
-
-fun <A, B> Moment<A>.pullOf(transform: (A) -> Moment<B>): Moment<B> =
-    Moment.pull(map(transform))
-
-fun <S, A, B> Moment<A>.enterOf(transform: (A) -> State<S, B>): MomentState<S, B> =
-    Moment.enter(map(transform))
