@@ -34,6 +34,12 @@ abstract class StateStructure<S, out A> {
         stateSignal: Signal<S>,
     ): MomentState<StateSchedulerLayer<S>, A>
 
+    fun constructEnterDirectly(
+        stateSignal: Signal<S>,
+        inputLayer: StateSchedulerLayer<S>,
+    ): Moment<Pair<StateSchedulerLayer<S>, A>> =
+        constructDirectly(stateSignal = stateSignal).enterDirectly(oldState = inputLayer)
+
     fun seed(initState: S): Moment<Pair<Cell<S>, A>> =
         EventStream.pullLooped1 { newStatesLoop: EventStream<S> ->
             val firstLayer = StateSchedulerLayer<S>(EventStream.never())
