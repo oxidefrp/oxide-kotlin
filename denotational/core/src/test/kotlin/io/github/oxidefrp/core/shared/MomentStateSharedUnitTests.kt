@@ -73,7 +73,7 @@ class MomentStateSharedUnitTests {
                                         EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
                                         EventOccurrenceDesc(tick = Tick(t = 40), event = S(sum = 40)),
                                         EventOccurrenceDesc(tick = Tick(t = 50), event = S(sum = 50)),
-                                    )
+                                    ),
                                 ),
                             ),
                         ),
