@@ -9,9 +9,9 @@ import io.github.oxidefrp.core.test_framework.testSystem
 import kotlin.test.Test
 
 class StateSchedulerSharedUnitTests {
-    object PullEnter {
+    object EventStreamPullEnter {
         @Test
-        fun testPullEnter() = testSystem {
+        fun test() = testSystem {
             val stateSignal = buildInputSignal {
                 when (it) {
                     Tick(t = 20) -> S(sum = 20)
