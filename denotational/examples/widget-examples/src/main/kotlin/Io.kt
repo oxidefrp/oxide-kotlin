@@ -1,5 +1,5 @@
 import io.github.oxidefrp.core.State
-import io.github.oxidefrp.core.StateScheduler
+import io.github.oxidefrp.core.shared.StateScheduler
 import io.github.oxidefrp.core.StateStructure
 
 data class RealWorld(
