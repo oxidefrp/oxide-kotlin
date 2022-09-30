@@ -20,7 +20,7 @@ import io.github.oxidefrp.core.test_framework.shared.withTail
 import io.github.oxidefrp.core.test_framework.testSystem
 import kotlin.test.Test
 
-class EventStreamOperatorsUnitTests {
+class EventStreamSharedUnitTests {
     object Never {
         @Test
         fun test() = testSystem {
