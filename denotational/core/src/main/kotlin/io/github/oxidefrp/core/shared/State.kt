@@ -1,4 +1,6 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.shared
+
+import io.github.oxidefrp.core.Moment
 
 abstract class State<S, out A> {
     companion object {
