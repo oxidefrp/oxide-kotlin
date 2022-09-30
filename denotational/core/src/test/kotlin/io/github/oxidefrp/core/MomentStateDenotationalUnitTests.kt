@@ -4,7 +4,7 @@ import io.github.oxidefrp.core.test_utils.tableSignal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MomentStateUnitTests {
+class MomentStateDenotationalUnitTests {
     object AsStateStructure {
         private val stateSignal = tableSignal(
             table = mapOf(
