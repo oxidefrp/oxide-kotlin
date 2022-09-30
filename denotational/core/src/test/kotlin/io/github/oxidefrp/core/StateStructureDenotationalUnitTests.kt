@@ -4,6 +4,7 @@ import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
+import io.github.oxidefrp.core.shared.orElse
 import io.github.oxidefrp.core.test_utils.tableSignal
 import kotlin.test.Test
 import kotlin.test.assertEquals

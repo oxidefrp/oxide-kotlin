@@ -3,6 +3,7 @@ package io.github.oxidefrp.core
 import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
+import io.github.oxidefrp.core.shared.orElse
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.CellValueSpec

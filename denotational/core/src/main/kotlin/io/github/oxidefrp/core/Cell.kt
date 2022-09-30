@@ -4,6 +4,7 @@ import io.github.oxidefrp.core.shared.MomentState
 import io.github.oxidefrp.core.shared.State
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
+import io.github.oxidefrp.core.shared.unzip2
 
 data class ValueChange<out A>(
     val oldValue: A,
@@ -126,13 +127,6 @@ abstract class Cell<out A> {
             }
         }
 
-        fun <A, B> unzip2(
-            cell: Cell<Pair<A, B>>,
-        ): Pair<Cell<A>, Cell<B>> = Pair(
-            cell.map { it.first },
-            cell.map { it.second },
-        )
-
         fun <S, A> enter(
             cell: Cell<State<S, A>>,
         ): StateStructure<S, Cell<A>> = Moment.enter(cell.sample()).constructOf { initialValue ->
@@ -157,7 +151,7 @@ abstract class Cell<out A> {
             ): MomentState<StateSchedulerLayer<S>, Cell<A>> = MomentState.enterDirectly { inputLayer ->
                 cell.pullOf { structure ->
                     structure.constructDirectly(stateSignal = stateSignal).enterDirectly(inputLayer)
-                }.map(::unzip2).map { (layerCell, valueCell) ->
+                }.map(Cell.Companion::unzip2).map { (layerCell, valueCell) ->
                     val outputLayer = StateSchedulerLayer.divert(layerCell)
                     return@map Pair(outputLayer, valueCell)
                 }
@@ -303,7 +297,6 @@ abstract class Cell<out A> {
 
     fun <B> divertOf(transform: (A) -> EventStream<B>): EventStream<B> = divert(map(transform))
 
-    fun <B> divertEarlyOf(transform: (A) -> EventStream<B>): EventStream<B> = divertEarly(map(transform))
 }
 
 fun <A, B> Cell<A>.switchOf(transform: (A) -> Cell<B>): Cell<B> = Cell.switch(map(transform))
