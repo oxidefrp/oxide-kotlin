@@ -19,11 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 object StateStructureDenotationalUnitTests {
-    /// Build a [StateStructure] object that adds [n] to every sum in the input
-    /// layer [S] state, injects all the states from the [extra] stream, and
-    /// returns [value] as the result.
-    /// This is not a practical [StateStructure], but rather a fake instance
-    /// that implements the contract directly and trivially.
+    // TODO: De-duplicate
     private fun <A> stateStructure(
         n: Int,
         extra: EventStream<S>,

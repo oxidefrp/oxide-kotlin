@@ -1,12 +1,9 @@
-package io.github.oxidefrp.core
+package io.github.oxidefrp.core.shared
 
-import io.github.oxidefrp.core.shared.MomentState
-import io.github.oxidefrp.core.shared.MomentStateSharedUnitTests
-import io.github.oxidefrp.core.shared.StateSchedulerLayer
-import io.github.oxidefrp.core.shared.StateStructure
-import io.github.oxidefrp.core.shared.construct
-import io.github.oxidefrp.core.shared.map
-import io.github.oxidefrp.core.shared.orElse
+import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.Signal
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.CellValueSpec
@@ -16,12 +13,14 @@ import io.github.oxidefrp.core.test_framework.shared.MomentSpec
 import io.github.oxidefrp.core.test_framework.shared.TestCheck
 import io.github.oxidefrp.core.test_framework.shared.TestSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
-import io.github.oxidefrp.core.test_framework.shared.ValueSpec
 import io.github.oxidefrp.core.test_framework.testSystem
-import java.lang.UnsupportedOperationException
 import kotlin.test.Test
 
 object StateStructureSharedUnitTests {
+    private data class S(
+        val sum: Int,
+    )
+
     /// Build a [StateStructure] object that adds [n] to every sum in the input
     /// layer [S] state, injects all the states from the [extra] stream, and
     /// returns [value] as the result.
@@ -82,41 +81,41 @@ object StateStructureSharedUnitTests {
 
             val firstSourceStructure = stateStructure(
                 n = 1,
-                extra = EventStream.ofInstants(
-                    Instant.strictNonNull(time = Time(5.0), element = S(sum = -1)),
-                    Instant.strictNonNull(time = Time(15.0), element = S(sum = -1)),
-                    Instant.strictNonNull(time = Time(25.0), element = S(sum = -1)),
-                    Instant.strictNonNull(time = Time(35.0), element = S(sum = -1)),
+                extra = buildInputStream(
+                    EventOccurrenceDesc(tick = Tick(t = 5), event = S(sum = -1)),
+                    EventOccurrenceDesc(tick = Tick(t = 15), event = S(sum = -1)),
+                    EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = -1)),
+                    EventOccurrenceDesc(tick = Tick(t = 35), event = S(sum = -1)),
                 ),
                 result = { "X" },
             )
 
             val secondSourceStructure = stateStructure(
                 n = 2,
-                extra = EventStream.ofInstants(
-                    Instant.strictNonNull(time = Time(5.0), element = S(sum = 5)),
-                    Instant.strictNonNull(time = Time(25.0), element = S(sum = 25)),
-                    Instant.strictNonNull(time = Time(45.0), element = S(sum = -1)),
+                extra = buildInputStream(
+                    EventOccurrenceDesc(tick = Tick(t = 5), event = S(sum = 5)),
+                    EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
+                    EventOccurrenceDesc(tick = Tick(t = 45), event = S(sum = -1)),
                 ),
                 result = { "${it.sum}/A" },
             )
 
             val thirdSourceStructure = stateStructure(
                 n = 3,
-                extra = EventStream.ofInstants(
-                    Instant.strictNonNull(time = Time(30.0), element = S(sum = -1)),
-                    Instant.strictNonNull(time = Time(55.0), element = S(sum = 55)),
-                    Instant.strictNonNull(time = Time(65.0), element = S(sum = -1)),
+                extra = buildInputStream(
+                    EventOccurrenceDesc(tick = Tick(t = 30), event = S(sum = -1)),
+                    EventOccurrenceDesc(tick = Tick(t = 55), event = S(sum = 55)),
+                    EventOccurrenceDesc(tick = Tick(t = 65), event = S(sum = -1)),
                 ),
                 result = { "${it.sum}/B" },
             )
 
             val fourthSourceStructure = stateStructure(
                 n = 4,
-                extra = EventStream.ofInstants(
-                    Instant.strictNonNull(time = Time(55.0), element = S(sum = -1)),
-                    Instant.strictNonNull(time = Time(66.0), element = S(sum = 66)),
-                    Instant.strictNonNull(time = Time(75.0), element = S(sum = 75)),
+                extra = buildInputStream(
+                    EventOccurrenceDesc(tick = Tick(t = 55), event = S(sum = -1)),
+                    EventOccurrenceDesc(tick = Tick(t = 66), event = S(sum = 66)),
+                    EventOccurrenceDesc(tick = Tick(t = 75), event = S(sum = 75)),
                 ),
                 result = { "${it.sum}/C" },
             )
