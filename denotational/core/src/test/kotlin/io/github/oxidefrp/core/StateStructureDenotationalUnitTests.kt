@@ -6,7 +6,15 @@ import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
 import io.github.oxidefrp.core.shared.construct
 import io.github.oxidefrp.core.shared.orElse
+import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
+import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
+import io.github.oxidefrp.core.test_framework.shared.TestCheck
+import io.github.oxidefrp.core.test_framework.shared.TestSpec
+import io.github.oxidefrp.core.test_framework.shared.Tick
+import io.github.oxidefrp.core.test_framework.shared.ValueSpec
+import io.github.oxidefrp.core.test_framework.testSystem
 import io.github.oxidefrp.core.test_utils.tableSignal
+import java.lang.UnsupportedOperationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -45,6 +53,7 @@ object StateStructureDenotationalUnitTests {
         }
     }
 
+    // TODO: Nuke?
     object TestCell {
         @Test
         fun testConstruct() {
@@ -237,59 +246,73 @@ object StateStructureDenotationalUnitTests {
         )
     }
 
-    @Test
-    fun testPull() {
-        val stateSignal = tableSignal(
-            table = mapOf(
-                Time(3.0) to S(sum = 1),
-            ),
-        )
-
-        val inputLayer = StateSchedulerLayer(
-            stateStream = EventStream.ofInstants(
-                Instant.strictNonNull(time = Time(1.0), element = S(sum = 10)),
-                Instant.strictNonNull(time = Time(2.5), element = S(sum = 25)),
-                Instant.strictNonNull(time = Time(4.0), element = S(sum = 40)),
-                Instant.strictNonNull(time = Time(5.0), element = S(sum = 50)),
-            ),
-        )
-
-        val momentStateStructure = stateStructure(
-            n = 2,
-            extra = EventStream.ofInstants(
-                Instant.strictNonNull(time = Time(2.0), element = S(sum = 20)),
-                Instant.strictNonNull(time = Time(4.5), element = S(sum = 45)),
-            ),
-            result = {
-                object : Moment<String>() {
-                    override fun pullDirectly(t: Time): String = "${it.sum}@${t.t}"
+    object Pull {
+        @Test
+        fun test() = testSystem {
+            val stateSignal = buildInputSignal {
+                when (it) {
+                    Tick(t = 30) -> S(sum = 1)
+                    else -> throw UnsupportedOperationException("Unexpected tick: $it")
                 }
-            },
-        )
+            }
 
-        val (outputLayer, outputValue) = StateStructure.pull(momentStateStructure).constructDirectly(
-            stateSignal = stateSignal,
-        ).pullEnterDirectly(
-            t = Time(3.0),
-            oldState = inputLayer,
-        )
+            val inputStateStream = buildInputStream(
+                EventOccurrenceDesc(tick = Tick(t = 10), event = S(sum = 10)),
+                EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
+                EventOccurrenceDesc(tick = Tick(t = 40), event = S(sum = 40)),
+                EventOccurrenceDesc(tick = Tick(t = 50), event = S(sum = 50)),
+            )
 
-        assertEquals(
-            expected = listOf(
-                Instant.strictNonNull(time = Time(1.0), element = S(sum = 12)),
-                Instant.strictNonNull(time = Time(2.0), element = S(sum = 20)),
-                Instant.strictNonNull(time = Time(2.5), element = S(sum = 27)),
-                Instant.strictNonNull(time = Time(4.0), element = S(sum = 42)),
-                Instant.strictNonNull(time = Time(4.5), element = S(sum = 45)),
-                Instant.strictNonNull(time = Time(5.0), element = S(sum = 52)),
-            ),
-            actual = outputLayer.stateStream.occurrences.instants.toList(),
-        )
+            val inputLayer = StateSchedulerLayer(stateStream = inputStateStream)
 
-        assertEquals(
-            expected = "1@3.0",
-            actual = outputValue,
-        )
+            val extraStream = buildInputStream(
+                EventOccurrenceDesc(tick = Tick(t = 20), event = S(sum = 20)),
+                EventOccurrenceDesc(tick = Tick(t = 45), event = S(sum = 45)),
+            )
+
+            val momentStateStructure = stateStructure(
+                n = 2,
+                extra = extraStream,
+                result = {
+                    object : Moment<String>() {
+                        override fun pullDirectly(t: Time): String = "${it.sum}@${t.t}"
+                    }
+                },
+            )
+
+            val (outputLayer, resultValue) = StateStructure.pull(momentStateStructure).constructDirectly(
+                stateSignal = stateSignal,
+            ).pullEnterDirectly(
+                t = Time(t = 30.0),
+                oldState = inputLayer,
+            )
+
+            TestSpec(
+                checks = listOf(
+                    TestCheck(
+                        subject = outputLayer.stateStream,
+                        name = "Output state stream",
+                        spec = EventStreamSpec(
+                            expectedEvents = listOf(
+                                EventOccurrenceDesc(tick = Tick(10), event = S(sum = 12)),
+                                EventOccurrenceDesc(tick = Tick(20), event = S(sum = 20)),
+                                EventOccurrenceDesc(tick = Tick(25), event = S(sum = 27)),
+                                EventOccurrenceDesc(tick = Tick(40), event = S(sum = 42)),
+                                EventOccurrenceDesc(tick = Tick(45), event = S(sum = 45)),
+                                EventOccurrenceDesc(tick = Tick(50), event = S(sum = 52)),
+                            )
+                        ),
+                    ),
+                    TestCheck(
+                        subject = resultValue,
+                        name = "Result value",
+                        spec = ValueSpec(
+                            expected = "1@30.0",
+                        ),
+                    ),
+                ),
+            )
+        }
     }
 
     @Test
