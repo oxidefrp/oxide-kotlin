@@ -173,6 +173,9 @@ abstract class MomentState<S, out A> {
                     // layer, it mixes constructor actions with the later stateful actions. They may potentially be
                     // interlaced.
                     // Idea: Maybe only the new cell value should be considered?
+                    // But is it a good idea? Construction can be special, it's construction after all. Not all I/O
+                    // is updating native widgets' state. That use case could be "solved" by `Cell::values()` operator
+                    // (not implemented yet at the time of writing).
                     inputLayer.mergeWithNewState(newState).map { outputLayer ->
                         Pair(outputLayer, value)
                     }
