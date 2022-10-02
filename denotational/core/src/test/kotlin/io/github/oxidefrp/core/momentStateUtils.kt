@@ -13,6 +13,7 @@ fun momentState(n: Int) = object : MomentState<S, String>() {
         }
 }
 
+// TODO: De-duplicate
 data class S(
     val sum: Int,
 )
