@@ -1,15 +1,18 @@
 package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.shared.MomentState
+import io.github.oxidefrp.core.shared.MomentStateSharedUnitTests
 import io.github.oxidefrp.core.shared.StateSchedulerLayer
 import io.github.oxidefrp.core.shared.StateStructure
 import io.github.oxidefrp.core.shared.construct
+import io.github.oxidefrp.core.shared.map
 import io.github.oxidefrp.core.shared.orElse
 import io.github.oxidefrp.core.test_framework.shared.CellSpec
 import io.github.oxidefrp.core.test_framework.shared.CellValueDesc
 import io.github.oxidefrp.core.test_framework.shared.CellValueSpec
 import io.github.oxidefrp.core.test_framework.shared.EventOccurrenceDesc
 import io.github.oxidefrp.core.test_framework.shared.EventStreamSpec
+import io.github.oxidefrp.core.test_framework.shared.MomentSpec
 import io.github.oxidefrp.core.test_framework.shared.TestCheck
 import io.github.oxidefrp.core.test_framework.shared.TestSpec
 import io.github.oxidefrp.core.test_framework.shared.Tick
@@ -196,48 +199,52 @@ object StateStructureSharedUnitTests {
                 CellValueSpec(tick = Tick(t = 60), newValue = fourthSourceStructure),
             )
 
-            val (outputLayer, resultCell) = Cell.construct(structureCell).constructDirectly(
-                stateSignal,
-            ).pullEnterDirectly(
-                t = Time(15.0),
+            val resultMoment = Cell.construct(structureCell).constructDirectly(
+                stateSignal = stateSignal,
+            ).enterDirectly(
                 oldState = inputLayer,
             )
+
+            val tick = Tick(t = 15)
 
             TestSpec(
                 checks = listOf(
                     TestCheck(
-                        subject = outputLayer.stateStream,
+                        subject = resultMoment.map { (outputLayer, _) -> outputLayer.stateStream },
                         name = "Output state stream",
-                        spec = EventStreamSpec(
-                            expectedEvents = listOf(
-                                // The extra states from the structure being current at the time of construction/entering _are_
-                                // forwarded (to the point of first structure cell change), but the ones from earlier structures
-                                // are not forwarded at all (thought: but is it good?)
-                                EventOccurrenceDesc(tick = Tick(t = 5), event = S(sum = 5)),
-                                EventOccurrenceDesc(tick = Tick(t = 10), event = S(sum = 10 + 2)),
-                                EventOccurrenceDesc(tick = Tick(t = 20), event = S(sum = 20 + 2)),
-                                EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
-                                EventOccurrenceDesc(tick = Tick(t = 30), event = S(sum = 30 + 2)),
-                                EventOccurrenceDesc(tick = Tick(t = 40), event = S(sum = 40 + 3)),
-                                EventOccurrenceDesc(tick = Tick(t = 50), event = S(sum = 50 + 3)),
-                                EventOccurrenceDesc(tick = Tick(t = 55), event = S(sum = 55)),
-                                EventOccurrenceDesc(tick = Tick(t = 60), event = S(sum = 60 + 4)),
-                                EventOccurrenceDesc(tick = Tick(t = 66), event = S(sum = 66)),
-                                EventOccurrenceDesc(tick = Tick(t = 70), event = S(sum = 70 + 4)),
-                                EventOccurrenceDesc(tick = Tick(t = 75), event = S(sum = 75)),
-                                EventOccurrenceDesc(tick = Tick(t = 80), event = S(sum = 80 + 4)),
-                            )
+                        spec = MomentSpec(
+                            expectedValues = mapOf(
+                                tick to EventStreamSpec(
+                                    expectedEvents = listOf(
+                                        EventOccurrenceDesc(tick = Tick(t = 20), event = S(sum = 20 + 2)),
+                                        EventOccurrenceDesc(tick = Tick(t = 25), event = S(sum = 25)),
+                                        EventOccurrenceDesc(tick = Tick(t = 30), event = S(sum = 30 + 2)),
+                                        EventOccurrenceDesc(tick = Tick(t = 40), event = S(sum = 40 + 3)),
+                                        EventOccurrenceDesc(tick = Tick(t = 50), event = S(sum = 50 + 3)),
+                                        EventOccurrenceDesc(tick = Tick(t = 55), event = S(sum = 55)),
+                                        EventOccurrenceDesc(tick = Tick(t = 60), event = S(sum = 60 + 4)),
+                                        EventOccurrenceDesc(tick = Tick(t = 66), event = S(sum = 66)),
+                                        EventOccurrenceDesc(tick = Tick(t = 70), event = S(sum = 70 + 4)),
+                                        EventOccurrenceDesc(tick = Tick(t = 75), event = S(sum = 75)),
+                                        EventOccurrenceDesc(tick = Tick(t = 80), event = S(sum = 80 + 4)),
+                                    ),
+                                ),
+                            ),
                         ),
                     ),
                     TestCheck(
-                        subject = resultCell,
+                        subject = resultMoment.map { (_, resultCell) -> resultCell },
                         name = "Result cell",
-                        spec = CellSpec(
-                            expectedInitialValue = "15/A",
-                            matchFrontValuesOnly = true,
-                            expectedInnerValues = listOf(
-                                CellValueDesc(tick = Tick(t = 35), value = "35/B"),
-                                CellValueDesc(tick = Tick(t = 60), value = "60/C"),
+                        spec = MomentSpec(
+                            expectedValues = mapOf(
+                                tick to CellSpec(
+                                    expectedInitialValue = "15/A",
+                                    matchFrontValuesOnly = true,
+                                    expectedInnerValues = listOf(
+                                        CellValueDesc(tick = Tick(t = 35), value = "35/B"),
+                                        CellValueDesc(tick = Tick(t = 60), value = "60/C"),
+                                    ),
+                                ),
                             ),
                         ),
                     ),
