@@ -1,4 +1,6 @@
 import io.github.oxidefrp.core.Cell
+import io.github.oxidefrp.core.shared.constructOf
+import io.github.oxidefrp.core.shared.enterOf
 
 sealed interface Node {
     companion object {
