@@ -120,8 +120,6 @@ abstract class Cell<out A> {
             }
         }
 
-
-
         fun <A, B> map1(
             ca: Cell<A>,
             f: (a: A) -> B,
@@ -242,21 +240,4 @@ abstract class Cell<out A> {
             )
         }
     }
-
-    fun <S, B> enterOf(
-        transform: (A) -> State<S, B>,
-    ): StateStructure<S, Cell<B>> = enter(map(transform))
-
-    fun <S, B> pullEnterOf(
-        transform: (A) -> MomentState<S, B>,
-    ): StateStructure<S, Cell<B>> = pullEnter(map(transform))
-
-    fun <S, B> constructOf(
-        transform: (A) -> StateStructure<S, B>,
-    ): StateStructure<S, Cell<B>> = construct(map(transform))
-
-    fun <B> divertOf(transform: (A) -> EventStream<B>): EventStream<B> = divert(map(transform))
-
 }
-
-fun <A, B> Cell<A>.switchOf(transform: (A) -> Cell<B>): Cell<B> = Cell.switch(map(transform))

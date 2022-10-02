@@ -57,6 +57,26 @@ fun <A, B> Cell<A>.pullOf(
     transform: (A) -> Moment<B>,
 ): Moment<Cell<B>> = Cell.pull(map(transform))
 
+fun <A, B> Cell<A>.divertOf(
+    transform: (A) -> EventStream<B>,
+): EventStream<B> = Cell.divert(map(transform))
+
 fun <A, B> Cell<A>.divertEarlyOf(
     transform: (A) -> EventStream<B>,
 ): EventStream<B> = Cell.divertEarly(map(transform))
+
+fun <A, B> Cell<A>.switchOf(
+    transform: (A) -> Cell<B>,
+): Cell<B> = Cell.switch(map(transform))
+
+fun <A, S, B> Cell<A>.constructOf(
+    transform: (A) -> StateStructure<S, B>,
+): StateStructure<S, Cell<B>> = Cell.construct(map(transform))
+
+fun <A, S, B> Cell<A>.enterOf(
+    transform: (A) -> State<S, B>,
+): StateStructure<S, Cell<B>> = Cell.enter(map(transform))
+
+fun <A, S, B> Cell<A>.pullEnterOf(
+    transform: (A) -> MomentState<S, B>,
+): StateStructure<S, Cell<B>> = Cell.pullEnter(map(transform))

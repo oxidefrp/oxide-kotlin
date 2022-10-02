@@ -182,4 +182,77 @@ object StateStructureSharedUnitTests {
             )
         }
     }
+
+    object Seed {
+        @Test
+        fun test() = testSystem {
+            val sourceCell = buildInputCell(
+                initialValue = 10,
+                CellValueSpec(tick = Tick(t = 15), newValue = 15),
+                CellValueSpec(tick = Tick(t = 30), newValue = 30),
+                CellValueSpec(tick = Tick(t = 40), newValue = 40),
+                CellValueSpec(tick = Tick(t = 50), newValue = 50),
+            )
+
+            val rootStateStructure = sourceCell.enterOf { n ->
+                object : State<S, String>() {
+                    override fun enterDirectly(oldState: S): Pair<S, String> {
+                        val newState = S(sum = oldState.sum + n)
+                        val result = "${oldState.sum}/+$n"
+                        return Pair(newState, result)
+                    }
+                }
+            }
+
+            val resultMoment = rootStateStructure.seed(
+                initState = S(sum = 1),
+            )
+
+            val tick = Tick(t = 20)
+
+            TestSpec(
+                checks = listOf(
+                    TestCheck(
+                        subject = resultMoment.map { (stateCell, _) -> stateCell },
+                        name = "State cell",
+                        spec = MomentSpec(
+                            expectedValues = mapOf(
+                                tick to CellSpec(
+                                    expectedInitialValue = S(sum = 1),
+                                    expectedInnerValues = listOf(
+                                        // The state cell inner values should represent the state accumulated over time
+                                        // and should not include the states from before the moment of seeding
+                                        CellValueDesc(tick = Tick(t = 20), value = S(sum = 1 + 15)),
+                                        CellValueDesc(tick = Tick(t = 30), value = S(sum = 1 + 15 + 30)),
+                                        CellValueDesc(tick = Tick(t = 40), value = S(sum = 1 + 15 + 30 + 40)),
+                                        CellValueDesc(tick = Tick(t = 50), value = S(sum = 1 + 15 + 30 + 40 + 50)),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                    TestCheck(
+                        subject = resultMoment.map { (_, resultCell) -> resultCell },
+                        name = "Result cell",
+                        spec = MomentSpec(
+                            expectedValues = mapOf(
+                                tick to CellSpec(
+                                    // The result cell initial value should be the seed init state and the current input
+                                    // cell state at the time of seeding (t = 20)
+                                    expectedInitialValue = "1/+15",
+                                    expectedInnerValues = listOf(
+                                        // The result cell inner values should be based on the state accumulated over
+                                        // time and do not include results at times from before the moment of seeding
+                                        CellValueDesc(tick = Tick(t = 30), value = "16/+30"),
+                                        CellValueDesc(tick = Tick(t = 40), value = "46/+40"),
+                                        CellValueDesc(tick = Tick(t = 50), value = "86/+50"),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+        }
+    }
 }
