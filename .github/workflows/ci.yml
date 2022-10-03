@@ -41,11 +41,11 @@ jobs:
       - name: Build & test the denotational semantics Gradle project
         uses: gradle/gradle-build-action@v2.3.0
         with:
-          build-root-directory: denotational
+          build-root-directory: oxide-denotational
           arguments: test
 
       - name: Build & test the operational implementation Gradle project
         uses: gradle/gradle-build-action@v2.3.0
         with:
-          build-root-directory: operational
+          build-root-directory: oxide-operational
           arguments: test
