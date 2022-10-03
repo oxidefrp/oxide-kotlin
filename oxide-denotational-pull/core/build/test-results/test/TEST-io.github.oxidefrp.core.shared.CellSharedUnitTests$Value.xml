@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.oxidefrp.core.shared.CellSharedUnitTests$Value" tests="1" skipped="0" failures="0" errors="0" timestamp="2022-10-03T12:59:26" hostname="Jakubs-MacBook-Pro.local" time="0.0">
+  <properties/>
+  <testcase name="test()" classname="io.github.oxidefrp.core.shared.CellSharedUnitTests$Value" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
