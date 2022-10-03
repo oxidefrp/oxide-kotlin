@@ -82,7 +82,7 @@ class EventStreamSharedUnitTests {
 
     object Spark {
         @Test
-        fun test() {
+        fun test() = testSystem {
             val sparkStream = EventStream.spark(13)
 
             TestSpec(
