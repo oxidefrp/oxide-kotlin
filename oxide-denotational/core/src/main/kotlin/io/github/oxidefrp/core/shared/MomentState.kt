@@ -11,6 +11,15 @@ abstract class MomentState<S, out A> {
                     Moment.pure(Pair(oldState, value))
             }
 
+        fun <S, A> lift(moment: Moment<A>): MomentState<S, A> =
+            object : MomentState<S, A>() {
+                override fun enterDirectly(
+                    oldState: S,
+                ): Moment<Pair<S, A>> = moment.map {
+                    Pair(oldState, it)
+                }
+            }
+
         fun <S> read(): MomentState<S, S> =
             object : MomentState<S, S>() {
                 override fun enterDirectly(oldState: S): Moment<Pair<S, S>> =

@@ -7,10 +7,10 @@ import io.github.oxidefrp.core.impl.signal.ApplySignalVertex
 import io.github.oxidefrp.core.impl.signal.ConstantSignalVertex
 import io.github.oxidefrp.core.impl.signal.MapSignalVertex
 import io.github.oxidefrp.core.impl.signal.MomentSourceSignalVertex
-import io.github.oxidefrp.core.impl.signal.SamplePerformSignalVertex
 import io.github.oxidefrp.core.impl.signal.SampleSignalVertex
 import io.github.oxidefrp.core.impl.signal.SignalVertex
 import io.github.oxidefrp.core.impl.signal.SourceSignalVertex
+import io.github.oxidefrp.core.shared.Io
 
 abstract class Signal<out A> {
     companion object {
@@ -25,13 +25,6 @@ abstract class Signal<out A> {
                 override val vertex: SignalVertex<A> =
                     SampleSignalVertex(signal = signal.vertex)
             }
-
-        fun <A> samplePerform(
-            signal: Signal<Io<Signal<Io<A>>>>,
-        ): Signal<Io<A>> = object : Signal<Io<A>>() {
-            override val vertex: SignalVertex<Io<A>> =
-                SamplePerformSignalVertex(signal = signal.vertex)
-        }
 
         fun <A> source(sampleExternal: () -> A): Signal<A> =
             object : Signal<A>() {
@@ -146,8 +139,6 @@ abstract class Signal<out A> {
         }
     }
 
-    fun sampleIo(): MomentIo<A> = MomentIo.lift(sample())
-
     fun sampleExternally(): A = Transaction.wrap {
         vertex.pullCurrentValue(transaction = it)
     }
@@ -157,20 +148,3 @@ fun <A, B> Signal<Io<A>>.mapNested(
     transform: (A) -> B,
 ): Signal<Io<B>> =
     this.map { it.map(transform) }
-
-fun <A, B> Signal<Io<A>>.sampleOfPure(
-    transform: (A) -> Signal<B>,
-): Signal<Io<B>> =
-    samplePerformOf {
-        transform(it).map(Io.Companion::pure)
-    }
-
-fun <A, B> Signal<A>.samplePerformOfPure(
-    transform: (A) -> Signal<Io<B>>,
-): Signal<Io<B>> =
-    Signal.samplePerform(this.map { Io.pure(transform(it)) })
-
-fun <A, B> Signal<Io<A>>.samplePerformOf(
-    transform: (A) -> Signal<Io<B>>,
-): Signal<Io<B>> =
-    Signal.samplePerform(this.mapNested(transform))

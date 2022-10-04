@@ -14,6 +14,7 @@ import io.github.oxidefrp.core.impl.event_stream.ObservingEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.impl.signal.SamplingSignalVertex
 import io.github.oxidefrp.core.impl.signal.SignalVertex
+import io.github.oxidefrp.core.shared.MomentIo
 
 internal class CellSampleSignalVertex<A>(
     private val cell: CellVertex<A>,
