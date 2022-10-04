@@ -1,8 +1,6 @@
 package io.github.oxidefrp.core
 
 import io.github.oxidefrp.core.impl.Transaction
-import io.github.oxidefrp.core.impl.moment.MomentVertex
-import io.github.oxidefrp.core.impl.moment.SampleMomentVertex
 import io.github.oxidefrp.core.impl.signal.ApplySignalVertex
 import io.github.oxidefrp.core.impl.signal.ConstantSignalVertex
 import io.github.oxidefrp.core.impl.signal.MapSignalVertex
@@ -132,11 +130,8 @@ abstract class Signal<out A> {
 
     // TODO: Nuke?
     fun sample(): Moment<A> = object : Moment<A>() {
-        override val vertex: MomentVertex<A> by lazy {
-            SampleMomentVertex(
-                signal = this@Signal.vertex,
-            )
-        }
+        override fun pullCurrentValue(transaction: Transaction): A =
+            vertex.pullCurrentValue(transaction = transaction)
     }
 
     fun sampleExternally(): A = Transaction.wrap {

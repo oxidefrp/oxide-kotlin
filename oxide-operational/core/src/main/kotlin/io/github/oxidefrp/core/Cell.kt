@@ -1,45 +1,15 @@
 package io.github.oxidefrp.core
 
-import io.github.oxidefrp.core.impl.Option
 import io.github.oxidefrp.core.impl.Transaction
-import io.github.oxidefrp.core.impl.cell.ApplyCellVertex
-import io.github.oxidefrp.core.impl.cell.ConstantCellVertex
-import io.github.oxidefrp.core.impl.cell.MapCellVertex
-import io.github.oxidefrp.core.impl.cell.SwitchCellVertex
-import io.github.oxidefrp.core.impl.event_stream.CellVertex
+import io.github.oxidefrp.core.impl.event_stream.DelayedStateMoment
 import io.github.oxidefrp.core.impl.event_stream.DivertEarlyEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.DivertLateEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.EventStreamVertex
-import io.github.oxidefrp.core.impl.event_stream.ObservingEventStreamVertex
-import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
-import io.github.oxidefrp.core.impl.signal.SamplingSignalVertex
 import io.github.oxidefrp.core.impl.signal.SignalVertex
 import io.github.oxidefrp.core.shared.MomentIo
-
-internal class CellSampleSignalVertex<A>(
-    private val cell: CellVertex<A>,
-) : SamplingSignalVertex<A>() {
-    override fun pullCurrentValueUncached(transaction: Transaction): A = cell.oldValue
-}
-
-internal class CellChangesEventStreamVertex<A>(
-    private val cell: CellVertex<A>,
-) : ObservingEventStreamVertex<ValueChange<A>>() {
-    override fun observe(
-        transaction: Transaction,
-    ): TransactionSubscription = cell.registerDependent(
-        transaction = transaction,
-        dependent = this,
-    )
-
-    override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<ValueChange<A>> =
-        cell.pullNewValue(transaction = transaction).map { newValue ->
-            ValueChange(
-                oldValue = cell.oldValue,
-                newValue = newValue,
-            )
-        }
-}
+import io.github.oxidefrp.core.shared.divertEarlyOf
+import io.github.oxidefrp.core.shared.orElse
+import io.github.oxidefrp.core.shared.pullOf
 
 data class ValueChange<out A>(
     val oldValue: A,
@@ -49,21 +19,26 @@ data class ValueChange<out A>(
 abstract class Cell<out A> {
     companion object {
         fun <A> constant(value: A): Cell<A> = object : Cell<A>() {
-            override val vertex: CellVertex<A> = ConstantCellVertex(value = value)
+            override val currentValue: Moment<A> = Moment.pure(value)
+
+            override val newValues: EventStream<A> = EventStream.never()
         }
 
         fun <A> switch(cell: Cell<Cell<A>>): Cell<A> = object : Cell<A>() {
-            override val vertex: CellVertex<A> by lazy {
-                SwitchCellVertex(
-                    source = cell.vertex,
-                )
-            }
+            override val newValues = cell.divertEarlyOf { it.newValues }.orElse(
+                cell.newValues.pullOf { it.sample() },
+            )
+
+            override val currentValue = DelayedStateMoment(
+                moment = cell.sample().pullOf { it.sample() },
+                steps = newValues,
+            )
         }
 
         fun <A> divert(cell: Cell<EventStream<A>>): EventStream<A> = object : EventStream<A>() {
             override val vertex: EventStreamVertex<A> by lazy {
                 DivertLateEventStreamVertex(
-                    source = cell.vertex,
+                    source = cell,
                 )
             }
         }
@@ -71,7 +46,7 @@ abstract class Cell<out A> {
         fun <A> divertEarly(cell: Cell<EventStream<A>>): EventStream<A> = object : EventStream<A>() {
             override val vertex: EventStreamVertex<A> by lazy {
                 DivertEarlyEventStreamVertex(
-                    source = cell.vertex,
+                    source = cell,
                 )
             }
         }
@@ -80,12 +55,29 @@ abstract class Cell<out A> {
             function: Cell<(A) -> B>,
             argument: Cell<A>,
         ): Cell<B> = object : Cell<B>() {
-            override val vertex: CellVertex<B> by lazy {
-                ApplyCellVertex(
-                    function = function.vertex,
-                    argument = argument.vertex,
-                )
-            }
+            override val newValues: EventStream<B> = EventStream.pull(
+                function.newValues.squashWith(other = argument.newValues, ifFirst = { fn ->
+                    argument.sample().map { arg ->
+                        fn(arg)
+                    }
+                }, ifSecond = { arg ->
+                    function.sample().map { fn ->
+                        fn(arg)
+                    }
+                }, ifBoth = { fn, arg ->
+                    Moment.pure(fn(arg))
+                }),
+            )
+
+            override val currentValue: Moment<B> = DelayedStateMoment(
+                moment = Moment.map2(
+                    function.sample(),
+                    argument.sample(),
+                ) { fn, arg ->
+                    fn(arg)
+                },
+                steps = newValues,
+            )
         }
 
         fun <A, B> map1(
@@ -128,37 +120,44 @@ abstract class Cell<out A> {
         }
     }
 
-    // Idea: Maybe the prototype should be `fun build(transaction: Transaction): Cell<Vertex>`?
-    internal abstract val vertex: CellVertex<A>
+    abstract val currentValue: Moment<A>
 
-    val changes: EventStream<ValueChange<A>> = object : EventStream<ValueChange<A>>() {
-        override val vertex: EventStreamVertex<ValueChange<A>> by lazy {
-            CellChangesEventStreamVertex(
-                cell = this@Cell.vertex,
-            )
+    abstract val newValues: EventStream<A>
+
+    val referenceCount: Int
+        get() = newValues.vertex.referenceCount
+
+    val changes: EventStream<ValueChange<A>> by lazy {
+        newValues.pullOf { newValue ->
+            this@Cell.sample().map { oldValue ->
+                ValueChange(oldValue = oldValue, newValue = newValue)
+            }
         }
     }
 
-    val newValues: EventStream<A>
-        get() = changes.map { it.newValue }
-
-    val value: Signal<A> by lazy {
-        object : Signal<A>() {
-            override val vertex: SignalVertex<A> = CellSampleSignalVertex(cell = this@Cell.vertex)
+    val value: Signal<A> = object : Signal<A>() {
+        override val vertex: SignalVertex<A> = object : SignalVertex<A>() {
+            override fun pullCurrentValue(transaction: Transaction): A =
+                this@Cell.sample().pullCurrentValue(transaction = transaction)
         }
     }
 
-    fun sample(): Moment<A> = value.sample()
+    fun sample(): Moment<A> = currentValue
+
+    fun sampleNew(): Moment<A> = newValues.currentOccurrence.pullOf {
+        if (it != null) Moment.pure(it.event)
+        else currentValue
+    }
 
     fun sampleIo(): MomentIo<A> = MomentIo.lift(sample())
 
     fun <B> map(transform: (A) -> B): Cell<B> = object : Cell<B>() {
-        override val vertex: CellVertex<B> by lazy {
-            MapCellVertex(
-                source = this@Cell.vertex,
-                transform = transform,
-            )
-        }
+        override val newValues: EventStream<B> = this@Cell.newValues.map(transform)
+
+        override val currentValue: Moment<B> = DelayedStateMoment(
+            moment = this@Cell.sample().map(transform),
+            steps = newValues,
+        )
     }
 
     fun <B> switchOf(transform: (A) -> Cell<B>): Cell<B> = switch(map(transform))

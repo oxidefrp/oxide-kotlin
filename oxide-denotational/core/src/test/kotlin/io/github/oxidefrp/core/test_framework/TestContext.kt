@@ -38,9 +38,9 @@ internal class TestContext(
         spec: InputCellSpec<A>,
     ): Cell<A> = object : Cell<A>() {
         override val segmentSequence: FullSegmentSequence<A> = FullSegmentSequence(
-            initialValue = spec.getOldValue(tick = Tick.Zero),
+            initialValue = spec.currentValueSpec.getValue(tick = Tick.Zero),
             innerValues = tickStream.occurrences.mapNotNull { _, tick ->
-                spec.getNewValueOccurrence(tick = tick)
+                spec.newValuesSpec.getOccurrence(tick = tick)
             }.map { _, newValueOccurrence -> newValueOccurrence.event }
         )
     }

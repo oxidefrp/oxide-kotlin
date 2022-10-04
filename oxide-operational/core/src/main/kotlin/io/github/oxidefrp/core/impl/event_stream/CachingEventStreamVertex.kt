@@ -8,7 +8,11 @@ internal abstract class CachingEventStreamVertex<A> : EventStreamVertex<A>() {
 
     final override fun process(transaction: Transaction) {
         pullCurrentOccurrence(transaction = transaction)
+
+        postProcess(transaction = transaction)
     }
+
+    open fun postProcess(transaction: Transaction) {}
 
     final override fun pullCurrentOccurrence(transaction: Transaction): Option<A> =
         cachedCurrentOccurrence ?: run {

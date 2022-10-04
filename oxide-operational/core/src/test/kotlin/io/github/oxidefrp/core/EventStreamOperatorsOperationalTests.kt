@@ -368,7 +368,7 @@ class EventStreamOperatorsOperationalTests {
         )
 
         assertEquals(
-            expected = 1,
+            expected = 2,
             actual = steps.vertex.referenceCount,
         )
 

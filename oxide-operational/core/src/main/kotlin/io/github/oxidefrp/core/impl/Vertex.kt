@@ -7,6 +7,7 @@ internal abstract class Vertex {
 
     val id = nextId++
 
+    // TODO: Move down?
     abstract fun getDependents(): Iterable<Vertex>
 
     // Thought: Does the unwritten contract of this method require all overrides

@@ -12,7 +12,7 @@ internal class PullEventStreamVertex<A>(
 
     override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A> =
         source.pullCurrentOccurrence(transaction = transaction).map { moment ->
-            moment.vertex.computeCurrentValue(transaction = transaction)
+            moment.pullCurrentValue(transaction = transaction)
         }
 
     override fun toString(): String = "PullMomentVertex{id = $id, source.id = ${source.id}}"

@@ -1,8 +1,14 @@
 package io.github.oxidefrp.core.impl.moment
 
 import io.github.oxidefrp.core.impl.Transaction
+import io.github.oxidefrp.core.impl.Vertex
 
-internal abstract class MomentVertex<out A> {
+internal abstract class MomentVertex<out A> : Vertex() {
+    override fun getDependents(): Iterable<Vertex> = emptyList()
+
+    override fun process(transaction: Transaction) {
+    }
+
     abstract fun computeCurrentValue(transaction: Transaction): A
 }
 

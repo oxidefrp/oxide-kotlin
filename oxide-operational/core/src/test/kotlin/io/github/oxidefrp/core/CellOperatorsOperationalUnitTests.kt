@@ -73,7 +73,7 @@ class CellOperatorsOperationalUnitTests {
 
         assertEquals(
             expected = 1,
-            actual = source.vertex.referenceCount,
+            actual = source.referenceCount,
         )
 
         changesVerifier.verifyNoReceivedEvents()
@@ -100,7 +100,7 @@ class CellOperatorsOperationalUnitTests {
 
         assertEquals(
             expected = 0,
-            actual = source.vertex.referenceCount,
+            actual = source.referenceCount,
         )
     }
 
@@ -178,24 +178,24 @@ class CellOperatorsOperationalUnitTests {
 
         assertEquals(
             expected = 1,
-            actual = oldCell.vertex.referenceCount,
+            actual = oldCell.referenceCount,
         )
 
         assertEquals(
             expected = 0,
-            actual = newCell.vertex.referenceCount,
+            actual = newCell.referenceCount,
         )
 
         source.setValueExternally(newCell)
 
         assertEquals(
             expected = 0,
-            actual = oldCell.vertex.referenceCount,
+            actual = oldCell.referenceCount,
         )
 
         assertEquals(
             expected = 1,
-            actual = newCell.vertex.referenceCount,
+            actual = newCell.referenceCount,
         )
 
         assertEquals(
@@ -214,12 +214,7 @@ class CellOperatorsOperationalUnitTests {
 
         assertEquals(
             expected = 0,
-            actual = oldCell.vertex.referenceCount,
-        )
-
-        assertEquals(
-            expected = 0,
-            actual = newCell.vertex.referenceCount,
+            actual = oldCell.referenceCount,
         )
     }
 
@@ -325,24 +320,24 @@ class CellOperatorsOperationalUnitTests {
 
         assertEquals(
             expected = 1,
-            actual = functionCell.vertex.referenceCount,
+            actual = functionCell.referenceCount,
         )
 
         assertEquals(
             expected = 1,
-            actual = functionCell.vertex.referenceCount,
+            actual = functionCell.referenceCount,
         )
 
         subscription.cancel()
 
         assertEquals(
             expected = 0,
-            actual = functionCell.vertex.referenceCount,
+            actual = functionCell.referenceCount,
         )
 
         assertEquals(
             expected = 0,
-            actual = functionCell.vertex.referenceCount,
+            actual = functionCell.referenceCount,
         )
     }
 

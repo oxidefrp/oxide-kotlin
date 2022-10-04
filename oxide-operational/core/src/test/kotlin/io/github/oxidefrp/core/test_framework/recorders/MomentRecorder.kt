@@ -23,7 +23,7 @@ internal class MomentRecorder<out S>(
         momentSpec.expectedValues[tick]?.let { valueSpec ->
             if (instantiatedValidators.containsKey(tick)) throw IllegalStateException()
 
-            val value = moment.vertex.computeCurrentValue(transaction = transaction)
+            val value = moment.pullCurrentValue(transaction = transaction)
 
             val validator = valueSpec.bind(
                 tick = tick,

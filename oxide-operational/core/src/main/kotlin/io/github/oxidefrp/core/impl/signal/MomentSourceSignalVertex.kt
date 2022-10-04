@@ -7,5 +7,5 @@ internal class MomentSourceSignalVertex<A>(
     private val moment: Moment<A>,
 ) : SamplingSignalVertex<A>() {
     override fun pullCurrentValueUncached(transaction: Transaction): A =
-        moment.vertex.computeCurrentValue(transaction = transaction)
+        moment.pullCurrentValue(transaction = transaction)
 }

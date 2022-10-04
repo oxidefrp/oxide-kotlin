@@ -13,30 +13,27 @@ abstract class Moment<out A> {
     companion object {
         fun <A> pure(value: A): Moment<A> =
             object : Moment<A>() {
-                override val vertex: MomentVertex<A> =
-                    PureMomentVertex(value = value)
+                override fun pullCurrentValue(transaction: Transaction): A = value
             }
 
         fun <A, B> apply(
             function: Moment<(A) -> B>,
             argument: Moment<A>,
-        ): Moment<B> =
-            object : Moment<B>() {
-                override val vertex: MomentVertex<B> by lazy {
-                    ApplyMomentVertex(
-                        function = function.vertex,
-                        argument = argument.vertex,
-                    )
-                }
+        ): Moment<B> = object : Moment<B>() {
+            override fun pullCurrentValue(transaction: Transaction): B {
+                val currentFunction = function.pullCurrentValue(transaction = transaction)
+                val currentArgument = argument.pullCurrentValue(transaction = transaction)
+
+                return currentFunction(currentArgument)
             }
+        }
 
         fun <A> pull(
             moment: Moment<Moment<A>>,
         ): Moment<A> = object : Moment<A>() {
-            override val vertex: MomentVertex<A> by lazy {
-                PullMomentVertex(
-                    source = moment.vertex.map { it.vertex },
-                )
+            override fun pullCurrentValue(transaction: Transaction): A {
+                val innerMoment = moment.pullCurrentValue(transaction = transaction)
+                return innerMoment.pullCurrentValue(transaction = transaction)
             }
         }
 
@@ -101,24 +98,17 @@ abstract class Moment<out A> {
         }
     }
 
-    internal abstract val vertex: MomentVertex<A>
+    internal abstract fun pullCurrentValue(transaction: Transaction): A
 
-    fun <B> map(transform: (A) -> B): Moment<B> =
-        object : Moment<B>() {
-            override val vertex: MomentVertex<B> by lazy {
-                MapMomentVertex(
-                    source = this@Moment.vertex,
-                    transform = transform,
-                )
-            }
+    fun <B> map(transform: (A) -> B): Moment<B> = object : Moment<B>() {
+        override fun pullCurrentValue(transaction: Transaction): B {
+            return transform(this@Moment.pullCurrentValue(transaction = transaction))
         }
-
-    fun pullExternally(): A = Transaction.wrap {
-        vertex.computeCurrentValue(transaction = it)
     }
 
-    internal fun pullDirectly(transaction: Transaction): A =
-        vertex.computeCurrentValue(transaction = transaction)
+    fun pullExternally(): A = Transaction.wrap {
+        this@Moment.pullCurrentValue(transaction = it)
+    }
 }
 
 fun <A, B> Moment<A>.pullOf(

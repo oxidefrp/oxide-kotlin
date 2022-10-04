@@ -10,10 +10,10 @@ internal data class CellValueSpec<out A>(
     val newValue: A,
 )
 
-internal abstract class InputCellSpec<E> {
-    abstract fun getOldValue(tick: Tick): E
+internal abstract class InputCellSpec<A> {
+    abstract val newValuesSpec: InputStreamSpec<A>
 
-    abstract fun getNewValueOccurrence(tick: Tick): EventOccurrence<E>?
+    abstract val currentValueSpec: InputMomentSpec<A>
 }
 
 internal class FiniteInputCellSpec<A> private constructor(
@@ -41,7 +41,7 @@ internal class FiniteInputCellSpec<A> private constructor(
         innerValues = innerValues.toList(),
     )
 
-    private val newValuesSpec = FiniteInputStreamSpec(
+    override val newValuesSpec: FiniteInputStreamSpec<A> = FiniteInputStreamSpec(
         events = innerValues.map {
             EventOccurrenceDesc(tick = it.tick, event = it.newValue)
         },
@@ -50,22 +50,22 @@ internal class FiniteInputCellSpec<A> private constructor(
     private val lastTick =
         innerValues.lastOrNull()?.tick ?: throw IllegalArgumentException("Input inner values list should not be empty")
 
-    override fun getOldValue(tick: Tick): A =
-        innerValues.filter { it.tick < tick }.maxByOrNull { it.tick }?.newValue ?: initialValue
-
-    override fun getNewValueOccurrence(tick: Tick): EventOccurrence<A>? = newValuesSpec.getOccurrence(tick = tick)
+    override val currentValueSpec: InputMomentSpec<A> = object : InputMomentSpec<A>() {
+        override fun getValue(tick: Tick): A =
+            innerValues.filter { it.tick < tick }.maxByOrNull { it.tick }?.newValue ?: initialValue
+    }
 
     private fun withTail(
         tailSpec: InfiniteInputCellSpec<A>,
     ): InputCellSpec<A> = object : InputCellSpec<A>() {
-        override fun getOldValue(tick: Tick): A = when {
-            tick <= lastTick || tick == lastTick.next -> this@FiniteInputCellSpec.getOldValue(tick = tick)
-            else -> tailSpec.getOldValue(tick = tick)
-        }
+        override val newValuesSpec: InputStreamSpec<A> =
+            this@FiniteInputCellSpec.newValuesSpec.withTail(tailSpec.newValuesSpec)
 
-        override fun getNewValueOccurrence(tick: Tick): EventOccurrence<A>? = when {
-            tick <= lastTick -> this@FiniteInputCellSpec.getNewValueOccurrence(tick = tick)
-            else -> tailSpec.getNewValueOccurrence(tick = tick)
+        override val currentValueSpec: InputMomentSpec<A> = object : InputMomentSpec<A>() {
+            override fun getValue(tick: Tick): A = when {
+                tick <= lastTick || tick == lastTick.next -> this@FiniteInputCellSpec.currentValueSpec.getValue(tick = tick)
+                else -> tailSpec.currentValueSpec.getValue(tick = tick)
+            }
         }
     }
 
@@ -89,15 +89,21 @@ internal class InfiniteInputCellSpec<A>(
      */
     private val buildNewValue: (Tick) -> A,
 ) : InputCellSpec<A>() {
-    override fun getOldValue(tick: Tick): A {
+    private fun getOldValue(tick: Tick): A {
         val oldValue = tick.previous?.let(buildNewValue) ?: initialValue
         return oldValue ?: buildNewValue(tick)
     }
 
-    override fun getNewValueOccurrence(tick: Tick): EventOccurrence<A>? {
-        val oldValue = tick.previous?.let(this::getOldValue)
-        val newValue = buildNewValue(tick)
+    override val newValuesSpec: InputStreamSpec<A> = object : InputStreamSpec<A>() {
+        override fun getOccurrence(tick: Tick): EventOccurrence<A>? {
+            val oldValue = tick.previous?.let(this@InfiniteInputCellSpec::getOldValue)
+            val newValue = buildNewValue(tick)
 
-        return if (oldValue != newValue) EventOccurrence(event = newValue) else null
+            return if (oldValue != newValue) EventOccurrence(event = newValue) else null
+        }
+    }
+
+    override val currentValueSpec: InputMomentSpec<A> = object : InputMomentSpec<A>() {
+        override fun getValue(tick: Tick): A = getOldValue(tick = tick)
     }
 }

@@ -1,59 +1,64 @@
 package io.github.oxidefrp.core.impl.event_stream
 
 import io.github.oxidefrp.core.EventStream
+import io.github.oxidefrp.core.Moment
 import io.github.oxidefrp.core.impl.Option
 import io.github.oxidefrp.core.impl.Transaction
 
 internal abstract class DivertEventStreamVertex<A>(
-    private val source: CellVertex<EventStream<A>>,
+    private val outerStream: EventStream<EventStream<A>>,
+    private val currentInnerStream: Moment<EventStream<A>>,
 ) : ObservingEventStreamVertex<A>() {
     private var innerSubscription: TransactionSubscription? = null
 
     final override fun observe(transaction: Transaction): TransactionSubscription {
-        val innerStreamVertex = source.oldValue.vertex
+        val outerSubscription = outerStream.vertex.registerDependent(
+            transaction = transaction,
+            dependent = this,
+        )
 
-        val outerSubscription = source.registerDependent(transaction = transaction, dependent = this)
+        val initialStream = currentInnerStream.pullCurrentValue(transaction = transaction)
 
-        this.innerSubscription = innerStreamVertex.registerDependent(transaction = transaction, dependent = this)
+        this.innerSubscription = initialStream.vertex.registerDependent(
+            transaction = transaction,
+            dependent = this,
+        )
 
-        val innerMetaSubscription = object : TransactionSubscription {
+        return object : TransactionSubscription {
             override fun cancel(transaction: Transaction) {
+                outerSubscription.cancel(transaction = transaction)
+
                 val innerSubscription = this@DivertEventStreamVertex.innerSubscription
                     ?: throw RuntimeException("Critical: there's no remembered inner subscription")
 
                 innerSubscription.cancel(transaction = transaction)
             }
         }
-
-        return outerSubscription + innerMetaSubscription
     }
 
     final override fun pullCurrentOccurrenceUncached(transaction: Transaction): Option<A> {
-        val newStreamOpt = source.pullNewValue(transaction = transaction)
-
-        newStreamOpt.ifSome { newInnerStream ->
-            val newInnerStreamVertex = newInnerStream.vertex
-
-            val subscription = innerSubscription
-                ?: throw RuntimeException("Critical: there's no remembered inner subscription")
-
-            subscription.cancel(transaction = transaction)
-
-            innerSubscription = newInnerStreamVertex.registerDependent(transaction = transaction, dependent = this)
-        }
-
-        val currentStream = chooseCurrentStream(
-            oldStream = source.oldValue,
-            newStreamOpt = newStreamOpt,
+        val innerStream = currentInnerStream.pullCurrentValue(
+            transaction = transaction,
         )
 
-        val currentInnerStreamVertex = currentStream.vertex
-
-        return currentInnerStreamVertex.pullCurrentOccurrence(transaction = transaction)
+        return innerStream.vertex.pullCurrentOccurrence(
+            transaction = transaction,
+        )
     }
 
-    abstract fun chooseCurrentStream(
-        oldStream: EventStream<A>,
-        newStreamOpt: Option<EventStream<A>>,
-    ): EventStream<A>
+    override fun postProcess(transaction: Transaction) {
+        outerStream.vertex.pullCurrentOccurrence(
+            transaction = transaction,
+        ).ifSome { newInnerStream ->
+            val innerSubscription = this.innerSubscription
+                ?: throw RuntimeException("Critical: there's no remembered inner subscription")
+
+            innerSubscription.cancel(transaction = transaction)
+
+            this.innerSubscription = newInnerStream.vertex.registerDependent(
+                transaction = transaction,
+                dependent = this,
+            )
+        }
+    }
 }

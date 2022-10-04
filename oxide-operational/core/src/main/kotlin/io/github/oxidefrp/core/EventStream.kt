@@ -12,13 +12,12 @@ import io.github.oxidefrp.core.impl.event_stream.ProbeEachEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.ProbeEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.PullEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SourceEventStreamVertex
-import io.github.oxidefrp.core.impl.event_stream.SparkMomentVertex
+import io.github.oxidefrp.core.impl.event_stream.SparkEventStreamVertex
 import io.github.oxidefrp.core.impl.event_stream.SquashWithEventStreamVertex
+import io.github.oxidefrp.core.impl.event_stream.StateVertex
 import io.github.oxidefrp.core.impl.event_stream.SubscriptionVertex
 import io.github.oxidefrp.core.impl.event_stream.TransactionSubscription
 import io.github.oxidefrp.core.impl.getOrNull
-import io.github.oxidefrp.core.impl.moment.MomentVertex
-import io.github.oxidefrp.core.impl.signal.HoldMomentVertex
 
 data class EventOccurrence<out A>(
     val event: A,
@@ -66,18 +65,24 @@ abstract class EventStream<out A> {
                 }
             }
 
-        fun <A> spark(value: A): Moment<EventStream<A>> =
-            object : Moment<EventStream<A>>() {
-                override val vertex = SparkMomentVertex(
+        fun <A> spark(
+            value: A,
+        ): Moment<EventStream<A>> = object : Moment<EventStream<A>>() {
+            override fun pullCurrentValue(
+                transaction: Transaction,
+            ): EventStream<A> = object : EventStream<A>() {
+                override val vertex = SparkEventStreamVertex(
+                    transaction = transaction,
                     value = value,
                 )
             }
+        }
 
         fun <A, R> pullLooped1(
             f: (streamA: EventStream<A>) -> Moment<Loop1<A, R>>,
         ): Moment<R> = object : Moment<R>() {
-            override val vertex = object : MomentVertex<R>() {
-                override fun computeCurrentValue(transaction: Transaction): R = object {
+            override fun pullCurrentValue(transaction: Transaction): R {
+                return object {
                     val streamALoop: EventStream<A> = object : EventStream<A>() {
                         override val vertex: EventStreamVertex<A> by lazy {
                             loop.streamA.vertex
@@ -85,7 +90,7 @@ abstract class EventStream<out A> {
                     }
 
                     val loop by lazy {
-                        f(streamALoop).vertex.computeCurrentValue(transaction = transaction)
+                        f(streamALoop).pullCurrentValue(transaction = transaction)
                     }
                 }.loop.result
             }
@@ -134,11 +139,9 @@ abstract class EventStream<out A> {
         pull(map(selector))
 
     val currentOccurrence: Moment<EventOccurrence<A>?> = object : Moment<EventOccurrence<A>?>() {
-        override val vertex = object : MomentVertex<EventOccurrence<A>?>() {
-            override fun computeCurrentValue(transaction: Transaction): EventOccurrence<A>? =
-                this@EventStream.vertex.pullCurrentOccurrence(transaction = transaction)
-                    .map { EventOccurrence(event = it) }.getOrNull()
-        }
+        override fun pullCurrentValue(transaction: Transaction): EventOccurrence<A>? =
+            this@EventStream.vertex.pullCurrentOccurrence(transaction = transaction)
+                .map { EventOccurrence(event = it) }.getOrNull()
     }
 
     internal fun subscribe(
@@ -189,15 +192,27 @@ fun <A> EventStream<A>.mergeWith(
     )
 }
 
-fun <A> EventStream<A>.hold(initialValue: A): Moment<Cell<A>> =
-    object : Moment<Cell<A>>() {
-        override val vertex: MomentVertex<Cell<A>> by lazy {
-            HoldMomentVertex(
-                steps = this@hold,
-                initialValue = initialValue,
-            )
+fun <A> EventStream<A>.hold(
+    initialValue: A,
+): Moment<Cell<A>> = object : Moment<Cell<A>>() {
+    override fun pullCurrentValue(transaction: Transaction): Cell<A> {
+        val stateVertex = StateVertex(
+            transaction = transaction,
+            initialValue = initialValue,
+            steps = this@hold,
+        )
+
+        return object : Cell<A>() {
+            override val currentValue = object : Moment<A>() {
+                override fun pullCurrentValue(
+                    transaction: Transaction,
+                ) = stateVertex.currentValue
+            }
+
+            override val newValues: EventStream<A> = this@hold
         }
     }
+}
 
 fun <A, R> EventStream<A>.accum(
     initialValue: R,
