@@ -1,11 +1,16 @@
 import io.github.oxidefrp.core.Cell
 import io.github.oxidefrp.core.EventStream
-import io.github.oxidefrp.core.Io
+import io.github.oxidefrp.core.IoUtils
+import io.github.oxidefrp.core.shared.Io
 import io.github.oxidefrp.core.Moment
+import io.github.oxidefrp.core.RealWorld
 import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.executeExternally
 import io.github.oxidefrp.core.impl.event_stream.ExternalSubscription
 import io.github.oxidefrp.core.mapNested
-import io.github.oxidefrp.core.samplePerformOf
+import io.github.oxidefrp.core.shared.MomentIo
+import io.github.oxidefrp.core.shared.enterOf
+import io.github.oxidefrp.core.shared.map
 import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLButtonElement
@@ -18,58 +23,52 @@ abstract class HtmlGenericWidget<W : HtmlWidgetInstance> {
     companion object {
         fun embed(parent: Element, widget: HtmlGenericWidget<*>) {
             parent.appendChild(
-                widget.buildFinalElementExternally().sampleExternally().performExternally(),
+                widget.buildFinalElementExternally().executeExternally()
             )
         }
     }
 
-    abstract fun buildFinalWidgetExternally(): Signal<Io<HtmlFinalWidget<W>>>
-
-//    fun <W2 : HtmlWidgetInstance> flatMap(transform: (W) -> HtmlGenericWidget<W>) {
-//
-//
-//    }
+    abstract fun buildFinalWidgetExternally(): MomentIo<HtmlFinalWidget<W>>
 }
 
-fun <W : HtmlWidgetInstance> HtmlGenericWidget<W>.buildFinalInstanceExternally(): Signal<Io<W>> =
-    buildFinalWidgetExternally().samplePerformOf {
-        Signal.constant(it.buildInstanceExternally())
+fun <W : HtmlWidgetInstance> HtmlGenericWidget<W>.buildFinalInstanceExternally(): MomentIo<W> =
+    buildFinalWidgetExternally().enterOf {
+        it.buildInstanceExternally()
     }
 
-fun <W : HtmlWidgetInstance> HtmlGenericWidget<W>.buildFinalElementExternally(): Signal<Io<Element>> =
-    buildFinalInstanceExternally().mapNested { it.element }
+fun <W : HtmlWidgetInstance> HtmlGenericWidget<W>.buildFinalElementExternally(): MomentIo<Element> =
+    buildFinalInstanceExternally().map { it.element }
 
 abstract class HtmlBuildContext<A> {
-
     companion object {
         fun <A> build(buildContext: HtmlBuildContext<HtmlBuildContext<A>>): HtmlBuildContext<A> =
             object : HtmlBuildContext<A>() {
-                override fun buildDirectly(): Signal<Io<A>> = buildContext.buildDirectly().samplePerformOf {
+                override fun buildDirectly(): MomentIo<A> = buildContext.buildDirectly().pullEnterOf {
                     it.buildDirectly()
                 }
             }
 
         fun <W : HtmlWidgetInstance> construct(widget: HtmlGenericWidget<W>): HtmlBuildContext<W> =
             object : HtmlBuildContext<W>() {
-                override fun buildDirectly(): Signal<Io<W>> = widget.buildFinalInstanceExternally()
+                override fun buildDirectly(): MomentIo<W> = widget.buildFinalInstanceExternally()
             }
 
-        fun <A> sample(signal: Signal<A>): HtmlBuildContext<A> =
-            object : HtmlBuildContext<A>() {
-                override fun buildDirectly(): Signal<Io<A>> =
-                    signal.map(Io.Companion::pure)
-            }
+//        fun <A> sample(signal: Signal<A>): HtmlBuildContext<A> =
+//            object : HtmlBuildContext<A>() {
+//                override fun buildDirectly(): MomentIo<A> =
+//                    signal.map(Io.pure)
+//            }
 
         fun <A> pull(signal: Moment<A>): HtmlBuildContext<A> =
             TODO()
     }
 
-    abstract fun buildDirectly(): Signal<Io<A>>
+    abstract fun buildDirectly(): MomentIo<A>
 
     fun <B> map(transform: (A) -> B): HtmlBuildContext<B> =
         object : HtmlBuildContext<B>() {
-            override fun buildDirectly(): Signal<Io<B>> =
-                this@HtmlBuildContext.buildDirectly().mapNested(transform)
+            override fun buildDirectly(): MomentIo<B> =
+                this@HtmlBuildContext.buildDirectly().map(transform)
         }
 
     fun <B> buildOf(transform: (A) -> HtmlBuildContext<B>): HtmlBuildContext<B> =
@@ -88,15 +87,15 @@ abstract class HtmlWidgetInstance {
 abstract class HtmlShadowWidget<W : HtmlWidgetInstance> : HtmlGenericWidget<W>() {
     abstract fun build(): HtmlBuildContext<HtmlGenericWidget<W>>
 
-    override fun buildFinalWidgetExternally(): Signal<Io<HtmlFinalWidget<W>>> =
-        build().buildDirectly().samplePerformOf {
+    override fun buildFinalWidgetExternally(): MomentIo<HtmlFinalWidget<W>> =
+        build().buildDirectly().pullEnterOf {
             it.buildFinalWidgetExternally()
         }
 }
 
 abstract class HtmlFinalWidget<W : HtmlWidgetInstance> : HtmlGenericWidget<W>() {
-    override fun buildFinalWidgetExternally(): Signal<Io<HtmlFinalWidget<W>>> =
-        Signal.constant(Io.pure(this))
+    override fun buildFinalWidgetExternally(): MomentIo<HtmlFinalWidget<W>> =
+        MomentIo.pure(this)
 
     abstract fun buildInstanceExternally(): Io<W>
 }
@@ -128,28 +127,27 @@ data class Text(
     val style: TextStyle? = null,
     val text: Cell<String>,
 ) : HtmlFinalWidget<HtmlWidgetInstance>() {
-    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> =
-        object : Io<HtmlWidgetInstance>() {
-            override fun performExternally(): HtmlWidgetInstance = object : HtmlWidgetInstance() {
-                override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
-                    this@Text.style?.applyTo(style)
+    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> = IoUtils.wrap {
+        object : HtmlWidgetInstance() {
+            override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
+                this@Text.style?.applyTo(style)
 
-                    var node = document.createTextNode(text.value.sampleExternally())
+                var node = document.createTextNode(text.value.sampleExternally())
 
-                    appendChild(node)
+                appendChild(node)
 
-                    text.reactExternallyIndefinitely {
-                        removeChild(node)
+                text.reactExternallyIndefinitely {
+                    removeChild(node)
 
-                        val newNode = document.createTextNode(it)
+                    val newNode = document.createTextNode(it)
 
-                        node = newNode
+                    node = newNode
 
-                        this.appendChild(newNode)
-                    }
+                    this.appendChild(newNode)
                 }
             }
         }
+    }
 }
 
 data class BorderStyle(
@@ -173,23 +171,22 @@ data class Column(
     val borderStyle: BorderStyle? = null,
     val children: List<HtmlGenericWidget<*>>,
 ) : HtmlFinalWidget<HtmlWidgetInstance>() {
-    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> =
-        object : Io<HtmlWidgetInstance>() {
-            override fun performExternally(): HtmlWidgetInstance = object : HtmlWidgetInstance() {
-                override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
-                    style.display = "flex"
-                    style.flexDirection = "column"
-                    style.alignItems = "stretch"
+    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> = IoUtils.wrap {
+        object : HtmlWidgetInstance() {
+            override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
+                style.display = "flex"
+                style.flexDirection = "column"
+                style.alignItems = "stretch"
 
-                    borderStyle?.applyTo(style)
+                borderStyle?.applyTo(style)
 
-                    this@Column.children.forEach {
-                        // FIXME: Transactions
-                        appendChild(it.buildFinalElementExternally().sampleExternally().performExternally())
-                    }
+                this@Column.children.forEach {
+                    // FIXME: Transactions
+                    appendChild(it.buildFinalElementExternally().executeExternally())
                 }
             }
         }
+    }
 }
 
 data class GrowableScrollView(
@@ -197,28 +194,27 @@ data class GrowableScrollView(
     val width: Double,
     val addChild: EventStream<HtmlGenericWidget<*>>,
 ) : HtmlFinalWidget<HtmlWidgetInstance>() {
-    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> =
-        object : Io<HtmlWidgetInstance>() {
-            override fun performExternally(): HtmlWidgetInstance = object : HtmlWidgetInstance() {
-                override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
-                    style.height = "${height}px"
-                    style.width = "${width}px"
+    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> = IoUtils.wrap {
+        object : HtmlWidgetInstance() {
+            override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
+                style.height = "${height}px"
+                style.width = "${width}px"
 
-                    style.overflowX = "hidden"
-                    style.overflowY = "scroll"
+                style.overflowX = "hidden"
+                style.overflowY = "scroll"
 
-                    style.display = "flex"
-                    style.flexDirection = "column"
+                style.display = "flex"
+                style.flexDirection = "column"
 
-                    addChild.subscribeExternallyIndefinitely {
-                        // FIXME: Transactions
-                        appendChild(it.buildFinalElementExternally().sampleExternally().performExternally())
+                addChild.subscribeExternallyIndefinitely {
+                    // FIXME: Transactions
+                    appendChild(it.buildFinalElementExternally().executeExternally())
 
-                        scrollTop = (scrollHeight - clientHeight).toDouble()
-                    }
+                    scrollTop = (scrollHeight - clientHeight).toDouble()
                 }
             }
         }
+    }
 }
 
 //data class ScrollView(
@@ -240,26 +236,25 @@ data class Row(
     val gap: Double,
     val children: List<HtmlGenericWidget<*>>,
 ) : HtmlFinalWidget<HtmlWidgetInstance>() {
-    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> =
-        object : Io<HtmlWidgetInstance>() {
-            override fun performExternally(): HtmlWidgetInstance = object : HtmlWidgetInstance() {
-                override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
-                    style.display = "flex"
-                    style.flexDirection = "row"
-                    style.alignItems = "center"
-                    style.justifyContent = "center"
-                    style.padding = "${padding}px"
-                    style.setProperty("gap", "${gap}px")
+    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> = IoUtils.wrap {
+        object : HtmlWidgetInstance() {
+            override val element: Element = createHtmlElement<HTMLDivElement>("div").apply {
+                style.display = "flex"
+                style.flexDirection = "row"
+                style.alignItems = "center"
+                style.justifyContent = "center"
+                style.padding = "${padding}px"
+                style.setProperty("gap", "${gap}px")
 
-                    borderStyle?.applyTo(style)
+                borderStyle?.applyTo(style)
 
-                    this@Row.children.forEach {
-                        // FIXME: Transactions
-                        appendChild(it.buildFinalElementExternally().sampleExternally().performExternally())
-                    }
+                this@Row.children.forEach {
+                    // FIXME: Transactions
+                    appendChild(it.buildFinalElementExternally().executeExternally())
                 }
             }
         }
+    }
 }
 
 class ButtonInstance(
@@ -279,14 +274,13 @@ class ButtonInstance(
 data class Button(
     val text: String,
 ) : HtmlFinalWidget<ButtonInstance>() {
-    override fun buildInstanceExternally(): Io<ButtonInstance> =
-        object : Io<ButtonInstance>() {
-            override fun performExternally() = ButtonInstance(
-                element = createHtmlElement<HTMLButtonElement>("button").apply {
-                    appendChild(
-                        document.createTextNode(text),
-                    )
-                },
-            )
-        }
+    override fun buildInstanceExternally(): Io<ButtonInstance> = IoUtils.wrap {
+        ButtonInstance(
+            element = createHtmlElement<HTMLButtonElement>("button").apply {
+                appendChild(
+                    document.createTextNode(text),
+                )
+            },
+        )
+    }
 }

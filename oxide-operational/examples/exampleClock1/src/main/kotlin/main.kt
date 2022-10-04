@@ -1,5 +1,6 @@
 import examples.exampleClock1.buildClock
 import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.executeExternally
 import io.github.oxidefrp.core.hold
 import kotlinx.browser.document
 import kotlinx.datetime.Clock
@@ -67,6 +68,6 @@ fun main() {
     )
 
     document.body!!.appendChild(
-        widget.buildFinalElementExternally().sampleExternally().performExternally(),
+        widget.buildFinalElementExternally().executeExternally(),
     )
 }

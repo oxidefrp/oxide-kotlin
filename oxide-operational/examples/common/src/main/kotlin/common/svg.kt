@@ -5,8 +5,11 @@ import HtmlWidgetInstance
 import animationFrameStream
 import io.github.oxidefrp.core.Cell
 import io.github.oxidefrp.core.EventStream
-import io.github.oxidefrp.core.Io
+import io.github.oxidefrp.core.IoUtils
+import io.github.oxidefrp.core.RealWorld
+import io.github.oxidefrp.core.shared.Io
 import io.github.oxidefrp.core.Signal
+import io.github.oxidefrp.core.shared.State
 import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.svg.SVGCircleElement
@@ -74,8 +77,8 @@ data class SvgSvg(
     val height: Double,
     val children: List<SvgWidget>,
 ) : HtmlFinalWidget<HtmlWidgetInstance>() {
-    override fun buildInstanceExternally() = object : Io<HtmlWidgetInstance>() {
-        override fun performExternally() = object : HtmlWidgetInstance() {
+    override fun buildInstanceExternally(): Io<HtmlWidgetInstance> = IoUtils.wrap {
+        object : HtmlWidgetInstance() {
             override val element: Element = createSvgElement<SVGSVGElement>("svg").apply {
                 setAttribute("xmlns", "http://www.w3.org/2000/svg")
                 setAttribute("viewBox", "0 0 ${this@SvgSvg.width} ${this@SvgSvg.height}")
