@@ -1,13 +1,10 @@
 import io.github.oxidefrp.core.Cell
 import io.github.oxidefrp.core.EventStream
 import io.github.oxidefrp.core.IoUtils
-import io.github.oxidefrp.core.shared.Io
 import io.github.oxidefrp.core.Moment
-import io.github.oxidefrp.core.RealWorld
-import io.github.oxidefrp.core.Signal
 import io.github.oxidefrp.core.executeExternally
 import io.github.oxidefrp.core.impl.event_stream.ExternalSubscription
-import io.github.oxidefrp.core.mapNested
+import io.github.oxidefrp.core.shared.Io
 import io.github.oxidefrp.core.shared.MomentIo
 import io.github.oxidefrp.core.shared.enterOf
 import io.github.oxidefrp.core.shared.map
@@ -52,12 +49,6 @@ abstract class HtmlBuildContext<A> {
             object : HtmlBuildContext<W>() {
                 override fun buildDirectly(): MomentIo<W> = widget.buildFinalInstanceExternally()
             }
-
-//        fun <A> sample(signal: Signal<A>): HtmlBuildContext<A> =
-//            object : HtmlBuildContext<A>() {
-//                override fun buildDirectly(): MomentIo<A> =
-//                    signal.map(Io.pure)
-//            }
 
         fun <A> pull(signal: Moment<A>): HtmlBuildContext<A> =
             TODO()
